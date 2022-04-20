@@ -7,8 +7,8 @@ import socket
 FORMAT = 'utf-8'
 
 # Setup ip and ports
-Edge_IP = ''
-Sentry_IP = ''
+Edge_IP = '127.0.0.1'
+Sentry_IP = '127.0.0.1'
 VIDEO_PORT = 2025
 Command_PORT = 2024
 
@@ -19,7 +19,7 @@ Sentry_ADDR = (Sentry_IP, Command_PORT)
 # Setup the sockets
 video_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Find local ip and Input ip and socket into video_udp
 video_udp.bind(Edgenode_ADDR) # Bind socket to ip and port.
-
+video_udp.settimeout(0.2)
 command_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 #_________________________________________________________________________________________#
@@ -28,7 +28,7 @@ command_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Decode video
 def Decoder():
-    print("Decoding") # reci
+    print("Decoding") # decode video feed
 
 # Receive videofeed
 def Receive(BUFFER_SIZE):
@@ -38,7 +38,4 @@ def Receive(BUFFER_SIZE):
 
 # Send Commands
 def Send(commands):
-    print("Sending Commands...")
     command_udp.sendto(commands, Sentry_ADDR)
-
-    
