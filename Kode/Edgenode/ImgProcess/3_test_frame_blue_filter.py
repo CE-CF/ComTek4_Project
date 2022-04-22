@@ -1,4 +1,3 @@
-
 #####################################################
 # Show imported image in four different formats	    #
 # 	- Standard image								#
