@@ -1,5 +1,3 @@
-
-
 #####################################################
 # Display imported image in four different formats	#
 # 	- Standard image								#
@@ -8,7 +6,6 @@
 #	- Edged image									#
 #													#
 #####################################################
-
 
 import cv2
 

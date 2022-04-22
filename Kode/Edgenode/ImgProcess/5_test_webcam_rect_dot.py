@@ -1,4 +1,11 @@
-# 
+#####################################################
+# Open webcam and display in a window.              #
+#   - Program will look for a color range and put   #
+#   a rectangle around it with a dot in the         #
+#   middle.                                         #   
+#                                                   #
+#####################################################
+
 
 import cv2
 import numpy

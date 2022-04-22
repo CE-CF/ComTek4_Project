@@ -1,4 +1,3 @@
-
 #####################################################
 # Open webcam and display in a window.              #
 #   - The window will only show colors within the   #
