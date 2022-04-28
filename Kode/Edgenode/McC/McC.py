@@ -22,12 +22,16 @@ def Magnitude(recCoord):
 	magnitude = sqrt(pow(recCoord[0],2)+pow(recCoord[1],2))
 	return magnitude
 
-def SpeedSetting(recCoord, ipList):
-	outEdge = Magnitude([(ipList[0]*2),(ipList[1]*2)])
-	numSettings = 4
-	rangeList = [0, outEdge/4, (outEdge/4)*2, (outEdge/4)*3, outEdge]
-	magnitude = Magnitude(recCoord)
+def SpeedSetting(recCoord, ipList, numSettings):
+	"""
 	
+
+	Input:
+	"""
+	outEdge = Magnitude([(ipList[0]*2),(ipList[1]*2)])
+	rangeList = [0, outEdge/numSettings, (outEdge/numSettings)*2, (outEdge/numSettings)*3, outEdge]
+	magnitude = Magnitude(recCoord)
+
 	if (magnitude<rangeList[1]):
 		speed = 0
 	elif (magnitude<rangeList[2]):
@@ -63,8 +67,10 @@ def motorControl(ipList, printOut=0):
 	pitch(degree)[int], yaw(degree)[int], speed[int]
 	"""
 	recDroneCoord = Recalibrate(ipList)
-	speed = SpeedSetting(recDroneCoord, ipList)
+	numberOfSettings = 4
+	speed = SpeedSetting(recDroneCoord, ipList, numberOfSettings)
 	pitch, yaw = getPitchYaw(recDroneCoord)
+
 	if (printOut != 0):
 		print(f'Mid of image coordinates are: [{ipList[0]},{ipList[1]}]\n\n')
 		print(f'The drone in located at: [{ipList[2]},{ipList[3]}]\n\n')
