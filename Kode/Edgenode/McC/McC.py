@@ -10,23 +10,36 @@ from scipy import misc
 from math import cos, atan2, degrees, sqrt, pow, pi
 import numpy as np
 
-# Calibrates drone coordinates to be relative to camera coordinates
+
 def Recalibrate(ipList):
+	"""
+	Calibrates drone coordinates to be relative to camera coordinates
+
+	Input:
+	(Camera coordinates and Drone coordinates)[list]
+
+	output:
+	New Drone Coordinates[list]
+	"""
 	newDroneCoord = [0,0]
 	newDroneCoord[0] = ipList[2]-ipList[0]
 	newDroneCoord[1] = ipList[3]-ipList[1]
 	return newDroneCoord
 
-# Calculates the vektor distancec to the drone from the camera
+
 def Magnitude(recCoord):
 	magnitude = sqrt(pow(recCoord[0],2)+pow(recCoord[1],2))
 	return magnitude
 
 def SpeedSetting(recCoord, ipList, numSettings):
 	"""
-	
+	Calculates desired speed setting based on vector to the drone
 
 	Input:
+	Recalibrated Drone Coordinates[list], Center of image[list], Number of speed settings[int]
+
+	Output:
+	Speed setting[int]
 	"""
 	outEdge = Magnitude([(ipList[0]*2),(ipList[1]*2)])
 	rangeList = [0, outEdge/numSettings, (outEdge/numSettings)*2, (outEdge/numSettings)*3, outEdge]
@@ -60,7 +73,9 @@ def getPitchYaw(recCoord):
 
 def motorControl(ipList, printOut=0):
 	"""
-	Takes ipList as input:
+	Takes image process output and producces pitch, yaw and speed setting
+
+	input:
 	Image Center is the first x =[0] y = [1] and Drone center is x = [2] y = [3]
 
 	Output:
