@@ -10,39 +10,56 @@ net = WiFi.WiFi
 
 data = b''
 
-yawAngle = 0
-yawSpeed = 0
-pitchAngle = 0 
-pitchSpeed = 0
+yawAngle = 180
+yawSpeed = 2
+pitchAngle = 180
+pitchSpeed = 3
+
+CTS = False
+
+def packer(yawAngle,pitchAngle,yawSpeed,pitchSpeed):
+    fullPack = struct.pack('hBhB', yawAngle, yawSpeed, pitchAngle,pitchSpeed)
+
+    return fullPack
 
 
-def packer():
-    struct.pack(h, yawAngle, pitchangle)
-    struct.pack(B, yawSpeed,pitchSpeed)
 
 
 def Receiver(BUFFER_SIZE):
     while(1):
         try:
             data = net.Receive(BUFFER_SIZE)
+            print(data)
         except:
             print("Didn't receive anything")
-        print(data)   
 
-def Sender(commands):
+def tcpSender(yawAngle,pitchAngle,yawSpeed,pitchSpeed):
     while(1):
-        print("sending commands")
-        net.Send(commands)
-
-def tcpSender(commands):
-    while(1):
-        print("sending commands")
-        net.tcpSend(commands)
+        time.sleep(1)
+        packet = packer(yawAngle, pitchAngle, yawSpeed, pitchSpeed)
+        if CTS == True:
+            print("sending commands")
+            net.Send(packet)
+        else:
+            print("Sending null commands")
+            net.Send(packet)
+            
 
 
 if __name__ == '__main__':
-    sendProcess = multiprocessing.Process(target=Sender, args=(commands,))
-    receiveProcess = multiprocessing.Process(target=Receiver, args=(2048,))
+    try:
+        sendProcess = multiprocessing.Process(target=tcpSender, args=(yawAngle, pitchAngle, yawSpeed, pitchSpeed))
+        receiveProcess = multiprocessing.Process(target=Receiver, args=(2048,))
 
-    receiveProcess.start()
-    sendProcess.start()
+        receiveProcess.start()
+        sendProcess.start()
+        receiveProcess.join()
+        sendProcess.join()
+    except KeyboardInterrupt:
+        print("Shutting down....")
+        sendProcess.terminate()
+        receiveProcess.terminate()
+        print("Bye")
+
+
+        
