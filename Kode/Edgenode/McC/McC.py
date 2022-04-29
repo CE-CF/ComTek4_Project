@@ -55,7 +55,7 @@ def SpeedSetting(recCoord, ipList, numSettings):
 		speed = 3
 	return speed
 
-def getPitchYaw(recCoord):
+def getPitchYaw(ipList):
 	"""
 	Calculates pitch and yaw that the Sentry Unit should move
 
@@ -65,10 +65,14 @@ def getPitchYaw(recCoord):
 	Output:
 	pitch(degree)[int], yaw(degree)[int]
 	"""
-	pOutput = atan2(recCoord[0],recCoord[1])
-	yOutput = (pi/2)-pOutput
+	print(recCoord)
+	yOutput = atan2(recCoord[1], recCoord[0])
+	pOutput = yOutput
+	yOutput -= pi/2
+	print(f'yOut atan2: {yOutput}')
+	print(f'pOut atan2: {pOutput}')
+	yOutput = round(degrees(yOutput), 0)
 	pOutput = round(degrees(pOutput), 0)
-	yOutput = round(degrees(yOutput),0)
 	return pOutput, yOutput 
 
 def motorControl(ipList, printOut=0):
@@ -84,7 +88,7 @@ def motorControl(ipList, printOut=0):
 	recDroneCoord = Recalibrate(ipList)
 	numberOfSettings = 4
 	speed = SpeedSetting(recDroneCoord, ipList, numberOfSettings)
-	pitch, yaw = getPitchYaw(recDroneCoord)
+	pitch, yaw = getPitchYaw(ipList)
 
 	if (printOut != 0):
 		print(f'Mid of image coordinates are: [{ipList[0]},{ipList[1]}]\n\n')
@@ -95,5 +99,5 @@ def motorControl(ipList, printOut=0):
 	return pitch, yaw, speed
 
 
-imageoutput = [3,3,4,5]
+imageoutput = [3,3,2,1]
 motorControl(imageoutput, 1)
