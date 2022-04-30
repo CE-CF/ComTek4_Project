@@ -16,7 +16,8 @@ def _time(f):
         start = time()
         r = f(*args)
         end = time()
-        print("%s timed %f" % (f.__name__, end-start) )
+        print("%s timed %f\n" % (f.__name__, end-start) )
+        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
         return r
     return wrapper
 
@@ -131,15 +132,19 @@ def motorControl(ipList, numberOfSettings, printOut=0):
 	pitch, yaw = getPitchYaw(ipList)
 
 	if (printOut != 0):
-		print(f'Camera center coordinates are: [{ipList[0]},{ipList[1]}]\n\n')
-		print(f'The drone in located at: [{ipList[2]},{ipList[3]}]\n\n')
-		print(f'The drone coordinates relative to the camera center: [{ipList[4]},{ipList[5]}]\n\n')
+		print("\nInput:\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
+		print(f'Camera center coordinates are:\t\t[{ipList[0]},{ipList[1]}]\n\n')
+		print(f'Drone center coordinates are:\t\t[{ipList[2]},{ipList[3]}]\n\n')
+		print(f'Drone relative to the camera center:\t[{ipList[4]},{ipList[5]}]\n')
+		print("Output:\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
 		print(f'The Speed setting: {speed} out of {numberOfSettings-1}\n\n')
 		print(f'Yaw in degrees: {yaw} \n\n')
-		print(f'Pitch in degrees: {pitch} \n\n')
+		print(f'Pitch in degrees: {pitch} \n')
+		print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
 	return	 pitch, yaw, speed
 
 
-
-ImProcOutput = [5,5,3,2]
-motorControl(ImProcOutput,4,1)
+if __name__=="__main__":   
+	ImProcOutput = [5,5,3,2]
+	NumberOfSpeedSettings = 4
+	motorControl(ImProcOutput,NumberOfSpeedSettings,1)
