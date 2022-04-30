@@ -16,7 +16,7 @@ def _time(f):
         start = time()
         r = f(*args)
         end = time()
-        print("%s timed %f" % (f.__name__, end-start) )
+        print("\033[F%s timed %f" % (f.__name__, end-start) )			# \033[F print up one line to not interefere with normal print without timer
         print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
         return r
     return wrapper
@@ -142,7 +142,7 @@ def motorControl(ipList, numberOfSettings, printOut=0):
 		print(f'The Speed setting in range 0 to {numberOfSettings-1}:\t{speed} \n\n')
 		print(f'Yaw in degrees:\t\t\t\t{yaw} \n\n')
 		print(f'Pitch in degrees:\t\t\t{pitch} \n')
-		print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+		print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
 	return	 pitch, yaw, speed
 
 
