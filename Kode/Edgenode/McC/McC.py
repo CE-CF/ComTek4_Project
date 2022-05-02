@@ -116,6 +116,7 @@ def getPitchYaw(ipList):
 	
 	return pOutput, yOutput 
 
+
 @_time
 def motorControl(ipList, numberOfSettings, printOut=0):
 	"""
