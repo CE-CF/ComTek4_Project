@@ -6,22 +6,28 @@ import struct
 import numpy as np
 import math
 
+##############################################################
+# Renaming
+##############################################################
 
-manager = mp.Manager()
 net = WiFi.WiFi
+manager = mp.Manager()
+
+##############################################################
+# Variables: Shared memory
+##############################################################
 
 number = manager.Value('H', 0)
-
-coordlist = manger.list(0,0,0,0)
+coordlist = manager.list([0,0,0,0])
 
 data = b''
 yaw = 0
 pitch = 0
+detected = manager.Value(bool, False)
 
-
-detected = False
-
-
+##############################################################
+# Functions
+##############################################################
 
 
 def Receiver(BUFFER_SIZE,number):
@@ -33,9 +39,7 @@ def Receiver(BUFFER_SIZE,number):
             print("Didn't receive anything")
             print(number.get())
 
-
-
-def tcpSender(yawAngle,pitchAngle,yawSpeed,pitchSpeed, number):
+def tcpSender(yaw, pitch, number):
     tal = 0
     while(1):
         time.sleep(1)
@@ -49,15 +53,13 @@ def tcpSender(yawAngle,pitchAngle,yawSpeed,pitchSpeed, number):
             tal = tal + 1
             number.set(tal)
 
-            
-
-
-
-
+##############################################################
+# Main
+##############################################################
 
 if __name__ == '__main__':
     try:
-        sendProcess = mp.Process(target=tcpSender, args=(yawAngle, pitchAngle, yawSpeed, pitchSpeed, number))
+        sendProcess = mp.Process(target=tcpSender, args=(yaw, pitch, number))
         receiveProcess = mp.Process(target=Receiver, args=(2048,number))
 
         receiveProcess.start()
