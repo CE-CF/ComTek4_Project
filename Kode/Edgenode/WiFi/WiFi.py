@@ -1,4 +1,5 @@
 import socket
+import struct
 
 #_________________________________________________________________________________________#
 #_________________________________________Setup___________________________________________#
@@ -27,6 +28,12 @@ command_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create socket f
 #_________________________________________________________________________________________#
 
 # Decode video
+
+def packer(yaw,pitch):
+    fullPack = struct.pack('hh', yaw, pitch)
+
+    return fullPack
+
 def Decoder():
     print("Decoding") # Decode video feed
 
