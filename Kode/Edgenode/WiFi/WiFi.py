@@ -9,8 +9,9 @@ import struct
 FORMAT = 'utf-8'
 
 # Setup ip and ports
-Edge_IP = '127.0.0.1'
-Sentry_IP = '127.0.0.1'
+Edge_IP = '192.168.1.123'
+Sentry_IP = '192.168.1.238'
+
 VIDEO_PORT = 2025
 Command_PORT = 2024
 
@@ -21,7 +22,7 @@ Sentry_ADDR = (Sentry_IP, Command_PORT) # Sentry unit address
 # Setup the sockets
 video_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Find local ip and Input ip and socket into video_udp
 video_udp.bind(Edgenode_ADDR) # Bind socket to ip and port.
-video_udp.settimeout(2) # set timeout for the receiving socket such that it gives an error if exceeded.
+#video_udp.settimeout(2) # set timeout for the receiving socket such that it gives an error if exceeded.
 command_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create socket for commands
 
 
@@ -60,7 +61,7 @@ def Decoder():
 def Receive(BUFFER_SIZE): # Receive videofeed udp
     data, addr = video_udp.recvfrom(BUFFER_SIZE) # recieve feed from Sentry unit 
 
-    return data
+    print(data)
 
 
 def Send(commands): # UDP communication for commands

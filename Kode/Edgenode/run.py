@@ -37,7 +37,6 @@ def Receiver(BUFFER_SIZE,number):
             print(data)
         except:
             print("Didn't receive anything")
-            print(number.get())
 
 def tcpSender(yaw, pitch, number):
     tal = 0
@@ -59,15 +58,15 @@ def tcpSender(yaw, pitch, number):
 
 if __name__ == '__main__':
     try:
-        sendProcess = mp.Process(target=tcpSender, args=(yaw, pitch, number))
+        #sendProcess = mp.Process(target=tcpSender, args=(yaw, pitch, number))
         receiveProcess = mp.Process(target=Receiver, args=(2048,number))
 
         receiveProcess.start()
-        sendProcess.start()
+        #sendProcess.start()
         receiveProcess.join()
-        sendProcess.join()
+        #sendProcess.join()
     except KeyboardInterrupt:
         print("Shutting down....")
-        sendProcess.terminate()
+        #sendProcess.terminate()
         receiveProcess.terminate()
         print("Bye")       
