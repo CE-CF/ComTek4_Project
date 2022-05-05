@@ -17,6 +17,20 @@ def _time(f):
         return r
     return wrapper
 
+def cameraOrientation(ipList, cameraFOV):
+	if (ipList[0] > ipList[1]): 
+		cameraFOVx = cameraFOV
+		cameraFOVy = ipList[1]/ipList[0]*cameraFOV
+	
+	elif (ipList[0] < ipList[1]):
+		cameraFOVy = cameraFOV
+		cameraFOVx = ipList[1]/ipList[0]*cameraFOV
+	
+	else:
+		cameraFOVy = cameraFOV
+		cameraFOVx = cameraFOV
+	return cameraFOVx, cameraFOVy
+
 def Recalibrate(ipList):
 	"""
 	Calibrates drone coordinates to be relative to camera coordinates
@@ -67,13 +81,14 @@ def SpeedSetting(ipList, numSettings):
 
 	return pSpeed, ySpeed
 
-def getPitchYaw(ipList):
+def getPitchYaw(ipList, xfov, yfov):
 	"""
 	Calculates pitch and yaw that the Sentry Unit should move
 	
 	Args:
 	    ipList (TYPE): 	Camera coordinates and Drone coordinates appended with New Drone Coordinates
-	
+		xfov (float):	Camera field of view on the x-axis
+		yfov (float):	Camera field of view on the y-axis
 	Returns:
 	    yaw (int):		Sentry Unit yaw movement in degrees
 	    pitch (int):	Sentry Unit pitch movement in degrees
@@ -84,45 +99,34 @@ def getPitchYaw(ipList):
 	
 	elif (ipList[4] == 0):													# Checkting to see if the yaw is correct but the pitch is not
 		yaw = 0
-		pitch = 90*(ipList[5]/ipList[1])
-	
-	elif (ipList[5] == 0):													# Checking to see if the pitch is correct but the yaw is not
-		yaw = 90*(ipList[4]/ipList[0])
-		pitch = 0
-	
-	else:
-		yaw = atan2(ipList[5], ipList[4])								# Checking to see in which half the drone is located, y > 0 or y < 0
+		pitch = yfov/2*(ipList[5]/ipList[1])
 		
-		if (yaw < 0):													# if y < 0							
-			if yaw < -(pi/2):												# checking if x < 0
-				yaw = atan2(ipList[4], ipList[5])						
-				yaw += pi
-				yaw = -yaw	
-			else:																# if x >= 0
-				yaw = atan2(ipList[4], ipList[5])
-				yaw -= (pi)
-				yaw = abs(yaw) 
-			pitch = -((pi/2)-abs(yaw))									# subtracting the yaw from 90 degrees to get the pitch
-
-		else:																# if y >= 0 
-			if yaw > (pi/2):												# checking if x < 0
-				yaw = atan2(ipList[4], ipList[5])						
-			else:																# if x >= 0
-				yaw = atan2(ipList[4], ipList[5])
-			pitch = (pi/2)-abs(yaw)										# subtracting the yaw from 90 degrees to get the pitch
-
-		yaw = round(degrees(yaw), 0)								# Converting yaw and pitch from rad to degrees 
-		pitch = round(degrees(pitch), 0)
-	
+	elif (ipList[5] == 0):													# Checking to see if the pitch is correct but the yaw is not
+		yaw = xfov/2*(ipList[4]/ipList[0])
+		pitch = 0
+	else:
+		if (ipList[4]<0):
+			yaw = xfov/2*(ipList[4]/ipList[0])
+			print(f'yaw = -xfov/2*(ipList[4]/ipList[0]) = {yaw}')
+		else:
+			yaw = xfov/2*(ipList[4]/ipList[0])
+			print(f'yaw = xfov/2*(ipList[4]/ipList[0]) = {yaw}')
+		if (ipList[5]<0):
+			pitch = yfov/2*(ipList[5]/ipList[1])
+			print(f'pitch = -yfov/2*(ipList[5]/ipList[1]) = {pitch}')
+		else:
+			pitch = yfov/2*(ipList[5]/ipList[1])
+			print(f'pitch = yfov/2*(ipList[5]/ipList[1]) = {pitch}')
 	return pitch, yaw 
 
 @_time
-def motorCorrection(ipList, numberOfSettings, correctionList=0, printOut=0):
+def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, printOut=0):
 	"""
 	Takes image process output and producces motor commands
 	
 	Args:
 	    ipList (list): Camera Center ([0],[1]) and Drone center is ([2],[3])
+	    cameraFOV (int): The Field of View for the camera
 	    numberOfSettings (int): Number of speed settings
 	    correctionList (int, list): if there is no correctionList input, the function will make one before returning result
 		printOut (int, optional): set to 1 for print, remove
@@ -141,9 +145,10 @@ def motorCorrection(ipList, numberOfSettings, correctionList=0, printOut=0):
 						print('We are currently at: {:4d} of {}'.format(x,ipList[0]*2))
 			for y in range(ipList[1]*2):
 				tmpList = [ipList[0],ipList[1],x,y]
+				cameraFOVx, cameraFOVy = cameraOrientation(ipList, cameraFOV)
 				Recalibrate(tmpList)
 				pSpeed, ySpeed = SpeedSetting(tmpList, numberOfSettings)
-				pitch, yaw = getPitchYaw(tmpList)
+				pitch, yaw = getPitchYaw(tmpList, cameraFOVx, cameraFOVy)
 				pickleList[x][y] = [yaw,ySpeed,pitch,pSpeed]
 		with open('correctionList.pkl', 'wb') as f:
 			pickle.dump(pickleList, f)
@@ -171,9 +176,12 @@ def motorCorrection(ipList, numberOfSettings, correctionList=0, printOut=0):
 
 
 if __name__=="__main__":   
+
 	NumberOfSpeedSettings = 4
-	ImProcOutput = [960,540,100,980]
-	#motorCorrection(ImProcOutput,NumberOfSpeedSettings)
+	ImProcOutput = [960,540,0,0]
+	cameraFOV = 53
+
+	#motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
 	with open('correctionList.pkl', 'rb') as f:
 		correctionList = pickle.load(f)
-	motorCorrection(ImProcOutput,NumberOfSpeedSettings,correctionList)
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList)
