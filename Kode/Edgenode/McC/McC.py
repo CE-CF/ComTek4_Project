@@ -120,7 +120,8 @@ def getPitchYaw(ipList, xfov, yfov):
 	return pitch, yaw 
 
 def packData(yDegree, ySpeed, pDegree, pSpeed, numSettings):
-	speedSetting = [pow(2,x) for x in range(5,numSettings+5)]
+	speedSetting = [pow(2,5)*x for x in range(numSettings)]
+	#print(speedSetting)
 	if (yDegree < 0):
 		yawPacked = -(abs(yDegree)+speedSetting[ySpeed])
 	else:
@@ -161,7 +162,7 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, printO
 				Recalibrate(tmpList)
 				pSpeed, ySpeed = SpeedSetting(tmpList, numberOfSettings)
 				pitch, yaw = getPitchYaw(tmpList, cameraFOVx, cameraFOVy)
-				if (x == 17 and y == 3):
+				if (x == ipList[2] and y == ipList[3]):
 					print(f'-----------------------pitch: {pitch}\n-----------------------yaw: {yaw}')
 				yawPacked, pitchPacked = packData(yaw, ySpeed,pitch,pSpeed,numberOfSettings)
 				pickleList[x][y] = [yawPacked, pitchPacked]
@@ -172,20 +173,16 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, printO
 
 	yawPacked = correctionList[ipList[2]][ipList[3]][0]
 	pitchPacked = correctionList[ipList[2]][ipList[3]][1]
-	print(f'yawPacked: {yawPacked}')
-	print(f'pitchPacked: {pitchPacked}')
-
-
 
 	if (printOut != 0):
 		print("\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 		print("                       Input\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
-		print(f'Camera center coordinates are:\t\t[{ipList[0]},{ipList[1]}]\n\n')
-		print(f'Drone center coordinates are:\t\t[{ipList[2]},{ipList[3]}]\n\n')
+		print(f'Camera center coordinates are:\t\t   [{ipList[0]:4d},{ipList[1]:4d}]\n\n')
+		print(f'Drone center coordinates are:\t\t   [{ipList[2]:4d},{ipList[3]:4d}]\n\n')
 		print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 		print("                       Output\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
-		print(f'yawPacked: \t{yawPacked:010b}\n')
-		print(f'pitchPacked: \t{pitchPacked:010b}\n')
+		print(f'yawPacked:\t\t int: {yawPacked:4d}  \tbit:{yawPacked:010b}\n')
+		print(f'pitchPacked:\t\t int: {pitchPacked:4d}  \tbit:{pitchPacked:010b}\n')
 		print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
 	return yawPacked, pitchPacked
 
@@ -193,10 +190,10 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, printO
 if __name__=="__main__":   
 
 	NumberOfSpeedSettings = 4
-	ImProcOutput = [16,9,17,3]
+	ImProcOutput = [960,540,1000,1000]
 	cameraFOV = 53
 
-	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
+	#motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
 	with open('correctionList.pkl', 'rb') as f:
 		correctionList = pickle.load(f)
 	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,1)
