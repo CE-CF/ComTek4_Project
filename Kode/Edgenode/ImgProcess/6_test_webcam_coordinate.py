@@ -14,6 +14,7 @@ def drone_detection(q_h, q_w, q_x, q_y):
     cam = cv2.VideoCapture(0)
     kernel = numpy.ones((5 ,5), numpy.uint8)
     print("\n[STREAM] Video stream begins...")
+    print(kernel)
 
     try:
         while True:
@@ -46,12 +47,13 @@ def drone_detection(q_h, q_w, q_x, q_y):
             cv2.rectangle(frame, (x, y), (x+w, y + h), (0, 255, 0), 3)
             cv2.circle(frame, (int(x+w/2), int(y+h/2)), 5, (0, 0, 255), -1)
 
-            #  
+            #   
             q_x.put(int(x+w/2))
             q_y.put(int(y+h/2))
 
             # Display video with rectangle and center dot
             cv2.imshow('Color detection', frame)
+            
 
             # Press 'Esc' to exit window
             k = cv2.waitKey(1) & 0xFF
@@ -82,6 +84,6 @@ if __name__ == "__main__":
         
         x = q_x.get()
         y = q_y.get()
-        print(f"Height:{height}\t Width:{width}\t X:{x}\t Y:{y}")   
+        #print(f"Height:{height}\t Width:{width}\t X:{x}\t Y:{y}")   
 
     

@@ -27,7 +27,7 @@ while True:
     result = cv2.bitwise_and(frame, frame, mask=mask)
 
     # Show video feed from webcam
-    cv2.imshow('window title', result)
+    cv2.imshow('window title', mask)
     
     # Press 'q' to close video feed from webcam
     if cv2.waitKey(1) == ord('q'):

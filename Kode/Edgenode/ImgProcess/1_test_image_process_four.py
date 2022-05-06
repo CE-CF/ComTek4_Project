@@ -10,15 +10,18 @@
 import cv2
 
 # Load image, displays it and prints its dimensions.
-path = '/home/wrongside/Documents/01 Comtek/01 Semester 4 project/git/ComTek4_Project/Kode/Edgenode/ImgProcess/test_drone.jpg' 	# Path to image
+path = '/home/wrongside/Documents/01 Comtek/01 Semester 4 project/Github/ComTek4_Project/Kode/Edgenode/ImgProcess/implement_image_process_police.png' 	# Path to image
 img = cv2.imread(path,-1) 																										# Reading the image using imread() function (-1 is default load, 0 is greyscale)
 cv2.imshow('Drone', img) 																										# Display image
 
 
 # Convert image to grey scale
 grey = cv2.imread(path,0)
-cv2.imshow('Grey', grey)
+#cv2.imshow('Grey', grey)
 
+# Convert image to HSV
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+cv2.imshow('HSV', hsv)
 
 # Blur image - this will remove small noise in the image
 blur = cv2.GaussianBlur(img, (7,7), cv2.BORDER_DEFAULT)
@@ -27,7 +30,7 @@ cv2.imshow('Blur', blur)
 
 # Egde cascade - find all edges in image
 edge = cv2.Canny(img,125,175)														# Number are thredshold
-cv2.imshow('Edge', edge)
+#cv2.imshow('Edge', edge)
 
 
 print(img.shape)		# print height, width and channels of image
