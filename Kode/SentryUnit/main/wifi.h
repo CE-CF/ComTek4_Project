@@ -14,6 +14,10 @@
 #include "esp_event.h"
 #include "esp_log.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+#include "freertos/task.h"
+
 static const char *_TAG = "wifi connector";
 static EventGroupHandle_t wifi_event_group;
 
