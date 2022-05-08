@@ -237,7 +237,7 @@ if __name__=="__main__":
 	ImProcOutput = [960,540,1900,250]
 	cameraFOV = 53
 
-	#motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
 	with open('correctionList.pkl', 'rb') as f:
 		correctionList = pickle.load(f)
 	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,1)
