@@ -1,7 +1,7 @@
 import WiFi.WiFi
 import ImgProcess.Img_process as analysis
 import multiprocessing as mp
-import socket, time, struct, math
+import socket, time, struct, math, pickle
 import numpy as np
 import cv2
 
@@ -23,7 +23,7 @@ coordlist = manager.list([0,0,0,0])
 data = manager.Value(bytes, 0xff)
 yaw = 0
 pitch = 0
-detected = manager.Value(bool, False)
+detected = True
 
 heightShared = manager.Value(int, 0)
 widthShared = manager.Value(int, 0)
@@ -31,28 +31,32 @@ xShared = manager.Value(int, 0)
 yShared = manager.Value(int, 0)
 
 
-image_arr = 0
+
 
 ##############################################################
 # Functions
 ##############################################################
 
+
 def Receiver(BUFFER_SIZE, number):
     while(1):
         try:
-            #data = b''
-            #data = net.Receive(BUFFER_SIZE)
+            x = net.Receive(BUFFER_SIZE)
+            data = np.array(x,np.uint8)
+            #data = x[0]
             #print(data)
-            #image_arr = np.frombuffer(data,np.uint8)
-            print(analysis.drone_detection(image_arr))
+            #data = pickle.loads(x)
+            #print("pickle")
+            analysis.drone_detection(data)
         except:
-            print("")
+            print("Didn't receive anything")
 
 def tcpSender(yaw, pitch, number):
     tal = 0
     while(1):
         time.sleep(1)
-        packet = net.packer(-154, 154)
+        packet = net.packer(-140, 140)
+        print(packet)
         if detected == True:
             print("sending commands")
             net.Send(packet)
@@ -75,17 +79,18 @@ def imageProcessProcess():
 if __name__ == '__main__':
     try:
         sendProcess = mp.Process(target=tcpSender, args=(yaw, pitch, number))
-        receiveProcess = mp.Process(target=Receiver, args=(2048,number))
+        #receiveProcess = mp.Process(target=Receiver, args=(2048,number))
         #imgProcessor = mp.Process(target=imageProcessProcess,)
 
-        receiveProcess.start()
-        #sendProcess.start()
+
+        #receiveProcess.start()
+        sendProcess.start()
         #imgProcessor.start()
-        receiveProcess.join()
-        #sendProcess.join()
+        #receiveProcess.join()
+        sendProcess.join()
         #imgProcessor.join()
     except KeyboardInterrupt:
         print("Shutting down....")
-        #sendProcess.terminate()
-        receiveProcess.terminate()
+        sendProcess.terminate()
+        #receiveProcess.terminate()
         print("Bye")
