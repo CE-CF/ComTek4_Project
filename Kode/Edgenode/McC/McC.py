@@ -121,25 +121,13 @@ def getPitchYaw(ipList, xfov, yfov):
 		pitch = 0
 	elif (ipList[4] == 0):
 		yaw = 0
-		if (ipList[5]<0):
-			pitch = int(round(yfov/2*(ipList[5]/ipList[1]),0))
-		else:
-			pitch = int(round(yfov/2*(ipList[5]/ipList[1]),0))
+		pitch = int(round(yfov/2*(ipList[5]/ipList[1]),0))
 	elif (ipList[5] == 0):
 		pitch = 0
-		if (ipList[4]<0):
-			yaw = int(round(xfov/2*(ipList[4]/ipList[0]),0))
-		else:
-			yaw = int(round(xfov/2*(ipList[4]/ipList[0]),0))
+		yaw = int(round(xfov/2*(ipList[4]/ipList[0]),0))
 	else:
-		if (ipList[4]<0):
-			yaw = int(round(xfov/2*(ipList[4]/ipList[0]),0))
-		else:
-			yaw = int(round(xfov/2*(ipList[4]/ipList[0]),0))
-		if (ipList[5]<0):
-			pitch = int(round(yfov/2*(ipList[5]/ipList[1]),0))
-		else:
-			pitch = int(round(yfov/2*(ipList[5]/ipList[1]),0))
+		yaw = int(round(xfov/2*(ipList[4]/ipList[0]),0))
+		pitch = int(round(yfov/2*(ipList[5]/ipList[1]),0))
 	return pitch, yaw 
 
 def packData(yDegree, ySpeed, pDegree, pSpeed, numSettings):
@@ -237,7 +225,7 @@ if __name__=="__main__":
 	ImProcOutput = [960,540,1900,250]
 	cameraFOV = 53
 
-	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
+motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
 	with open('correctionList.pkl', 'rb') as f:
 		correctionList = pickle.load(f)
 	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,1)
