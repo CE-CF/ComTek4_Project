@@ -3,16 +3,39 @@ https://stackoverflow.com/questions/58469297/how-do-i-calculate-the-yaw-pitch-an
 https://mathinsight.org/spherical_coordinates
 """
 import os
-from math import atan2, degrees, pi
+from math import atan2, degrees, pi, floor
 import numpy as np
-from time import time
 import pickle
+import time, sys
+
+# update_progress() : Displays or updates a console progress bar
+## Accepts a float between 0 and 1. Any int will be converted to a float.
+## A value under 0 represents a 'halt'.
+## A value at 1 or bigger represents 100%
+def update_progress(progress):
+    barLength = 23 # Modify this to change the length of the progress bar
+    status = ""
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+        status = "error: progress var must be float\r\n"
+    if progress < 0:
+        progress = 0
+        status = "Halt...\r\n"
+    if progress >= 1:
+        progress = 1
+        status = "Done...\r\n"
+    block = int(round(barLength*progress))
+    text = "\rCreating correctionList: [{0}] {1}% {2}".format( "#"*block + "-"*(barLength-block), int(progress*100), status)
+    sys.stdout.write(text)
+    sys.stdout.flush()
 
 def _time(f):
     def wrapper(*args):
-        start = time()
+        start = time.time()
         r = f(*args)
-        end = time()
+        end = time.time()
         print("%s timed %f" % (f.__name__, end-start) )			# \033[F print up one line to not interefere with normal print without timer
         return r
     return wrapper
@@ -120,6 +143,21 @@ def getPitchYaw(ipList, xfov, yfov):
 	return pitch, yaw 
 
 def packData(yDegree, ySpeed, pDegree, pSpeed, numSettings):
+	"""
+	Takes degrees and speedsetting for the Sentry Unit and packs it.	
+	Args:
+	    ipList (list): Camera Center ([0],[1]) and Drone center is ([2],[3])
+	    cameraFOV (int): The Field of View for the camera
+	    numberOfSettings (int): Number of speed settings
+	    correctionList (int, list): if there is no correctionList input, the function will make one before returning result
+		printOut (int, optional): set to 1 for print, remove
+	
+	Returns:
+	    yaw (int):		Sentry Unit yaw movement in degrees
+	    ySpeed (int): 	The correction speed for yaw motor
+	    pitch (int):	Sentry Unit pitch movement in degrees
+	    pSpeed (int)	The correction speed for yaw motor
+	"""
 	speedSetting = [pow(2,5)*x for x in range(numSettings)]
 	#print(speedSetting)
 	if (yDegree < 0):
@@ -154,16 +192,13 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, printO
 		pickleList = [[[0 for x in range(2)]for y in range(ipList[1]*2)] for z in range(ipList[0]*2)]
 		for x in range(ipList[0]*2):
 			if (printOut != 0):
-					if (x%100 == 0):
-						print('We are currently at: {:4d} of {}'.format(x,ipList[0]*2))
+				update_progress((x/(ipList[0]*2)))
 			for y in range(ipList[1]*2):
 				tmpList = [ipList[0],ipList[1],x,y]
 				cameraFOVx, cameraFOVy = cameraOrientation(ipList, cameraFOV)
 				Recalibrate(tmpList)
 				pSpeed, ySpeed = SpeedSetting(tmpList, numberOfSettings)
 				pitch, yaw = getPitchYaw(tmpList, cameraFOVx, cameraFOVy)
-				if (x == ipList[2] and y == ipList[3]):
-					print(f'-----------------------pitch: {pitch}\n-----------------------yaw: {yaw}')
 				yawPacked, pitchPacked = packData(yaw, ySpeed,pitch,pSpeed,numberOfSettings)
 				pickleList[x][y] = [yawPacked, pitchPacked]
 		with open('correctionList.pkl', 'wb') as f:
@@ -181,16 +216,25 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, printO
 		print(f'Drone center coordinates are:\t\t   [{ipList[2]:4d},{ipList[3]:4d}]\n\n')
 		print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 		print("                       Output\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
-		print(f'yawPacked:\t\t int: {yawPacked:4d}  \tbit:{yawPacked:010b}\n')
-		print(f'pitchPacked:\t\t int: {pitchPacked:4d}  \tbit:{pitchPacked:010b}\n')
+		print(f'yawPacked:\t\t int: {yawPacked:4d}  \tbit:  {yawPacked:08b}')
+		if (yawPacked<0):
+			print(f'\t\t\t deg: {-(abs(yawPacked)%32):4d} \tspeed: {(floor(abs(yawPacked)/32)):7d}\n')
+		else:
+			print(f'\t\t\t deg: {(abs(yawPacked)%32):4d} \tspeed: {(floor(abs(yawPacked)/32)):7d}\n')
+		print(f'pitchPacked:\t\t int: {pitchPacked:4d}  \tbit:  {pitchPacked:08b}')
+		if (pitchPacked<0):
+			print(f'\t\t\t deg: {-(abs(pitchPacked)%32):4d} \tspeed: {(floor(abs(pitchPacked)/32)):7d}\n')
+		else:
+			print(f'\t\t\t deg: {(abs(pitchPacked)%32):4d} \tspeed: {(floor(abs(pitchPacked)/32)):7d}\n')
 		print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
+		print(f'testing pitch {(floor(abs(pitchPacked)/32))}')
 	return yawPacked, pitchPacked
 
 
 if __name__=="__main__":   
 
 	NumberOfSpeedSettings = 4
-	ImProcOutput = [960,540,1000,1000]
+	ImProcOutput = [960,540,1900,250]
 	cameraFOV = 53
 
 	#motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
