@@ -273,6 +273,7 @@ if __name__=="__main__":
 	args = parser.parse_args()
 	
 
+
 	if args.space:
 		timeOrSpace = 1
 	
@@ -286,5 +287,4 @@ if __name__=="__main__":
 			correctionList = pickle.load(f)
 		motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,timeOrSpace,printOut)
 	
-	
-	
+
