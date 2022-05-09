@@ -286,5 +286,15 @@ if __name__=="__main__":
 			correctionList = pickle.load(f)
 		motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,timeOrSpace,printOut)
 	
+	# Til main filen
+	"""
+	# Det her i starten til setup
+	NumberOfSpeedSettings = 4 		# Number of speed settings the Sentry Unit has
+	cameraFOV = 53					# Camera horizontal FoV
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1,0)
+	with open('correctionList.pkl', 'rb') as f:
+		correctionList = pickle.load(f)
 	
-	
+	# Det her til hver iteration efter
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,1,printOut)
+	"""
