@@ -1,7 +1,3 @@
-"""Kilder
-https://stackoverflow.com/questions/58469297/how-do-i-calculate-the-yaw-pitch-and-roll-of-a-point-in-3d
-https://mathinsight.org/spherical_coordinates
-"""
 import os
 from math import atan2, degrees, pi, floor
 import numpy as np
