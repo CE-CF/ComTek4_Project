@@ -1,36 +1,5 @@
-#ifndef __PACKETS_H
-#define __PACKETS_H
-
-#include <stdbool.h>
 #include <stdio.h>
-
-#define IMG_SIZE 4096
-
-
-typedef struct ImgPacket {
-  unsigned int sequence : 32;
-  char imgData[IMG_SIZE];
-} ImgPacket;
-
-
-/* 0
- * 0 1 2 3 4 5 6 7
- * +-+-+-+-+-+-+-+-+
- * |s|ya.|yaw angle|
- * +-+-+-+-+-+-+-+-+
- * |s|pi.|pitch an.|
- * +-+-+-+-+-+-+-+-+
- */
-typedef struct pVals {
-  unsigned int sign : 1;
-  unsigned int speed : 2;
-  unsigned int angle : 5;
-} pVals;
-
-typedef struct CmdPacket {
-  pVals yawVals;
-  pVals pitchVals;
-} CmdPacket;
+#include "packets.h"
 
 void dumpCmdPacket(CmdPacket packet){
   puts("[CmdPacket content]:");
@@ -62,5 +31,3 @@ CmdPacket char2packet(char *src){
   };
   return result;
 }
-
-#endif

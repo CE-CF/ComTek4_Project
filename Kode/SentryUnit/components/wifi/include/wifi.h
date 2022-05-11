@@ -13,22 +13,32 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_log.h"
+#include "packets.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
 
-static const char *_TAG = "wifi connector";
-static EventGroupHandle_t wifi_event_group;
+EventGroupHandle_t wifi_event_group;
 
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 #define WIFI_MAX_RETRIES 10
 
-static int retry_num = 0;
+#define PASS "SentryUnit"
+#define SSID "451_RPT"
 
-void connectWifi(char *SSID, char *PASS);
 
 
+#define EDGE_IP "127.0.0.1"
+#define UDP_PORT 2024
+#define TCP_PORT 2025
+
+void connectWifi();
+
+/*
+  pvParameters should be a reference to the function which takes the pictures
+ */
+void udpClientTask(void *pvParameters);
 
 #endif
