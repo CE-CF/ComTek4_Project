@@ -4,6 +4,9 @@
 #include "lwip/sockets.h"
 #include "wifi.h"
 #include "nvs_flash.h"
+#include "cam.h"
+
+
 
 void app_main(void)
 {
