@@ -11,7 +11,10 @@
 #include "esp_wifi_types.h"
 #include "freertos/portmacro.h"
 #include "freertos/projdefs.h"
+#include "packets.h"
+#include "string.h"
 #include "unistd.h"
+#include "math.h"
 
 const char *WIFI_TAG = "wifi_lib";
 int retry_num = 0;
@@ -107,6 +110,12 @@ void udpClientTask(void *pvParameters){
   int addr_family = AF_INET;
   int ip_protocol = IPPROTO_IP;
 
+  ImgPacket *payload;
+  ImgData *data;
+  data = (ImgData *) malloc(sizeof(ImgData));
+  payload = (ImgPacket *) malloc(sizeof(ImgPacket));
+
+  ESP_LOGI(WIFI_TAG, "LEFTOVER HEAP SPACE: %u", xPortGetFreeHeapSize());
   while(1){
     struct sockaddr_in dest_addr;
     dest_addr.sin_addr.s_addr = inet_addr(EDGE_IP);
@@ -121,26 +130,51 @@ void udpClientTask(void *pvParameters){
       break;
     }
     ESP_LOGI(WIFI_TAG, "Socket created, sending to %s:%d", EDGE_IP, UDP_PORT);
-    ImgPacket payload;
-    payload.sequence = 0;
+    payload->sequence = 0;
 
     while(1){
-      void (*tp) (ImgPacket*)=pvParameters;
-      tp(&payload);
-
-      ESP_LOGI(WIFI_TAG, "Attempting to send payload:\n\t[SEQ]: %u\n\t[LEN]: %u", payload.sequence, payload.imgLen);
-      int err = sendto(sock, &payload, sizeof(payload), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
-      if (err < 0){
-        ESP_LOGE(WIFI_TAG, "Error occured during send off errno: %d", errno);
-        break;
+      void (*tp) (ImgData*)=pvParameters;
+      tp(data);
+      /*
+        Split data into multiple packets
+       */
+      payload->maxPackets = (unsigned int) ceil((float) data->imgLen/sizeof(payload->dat));
+      payload->imgLen = data->imgLen;
+      int i = 0;
+      ESP_LOGI(WIFI_TAG, "Got pic with len: %u, splitting into: %u", payload->imgLen, payload->maxPackets);
+      for (int j = 1; j <= payload->maxPackets; j++){
+        payload->datId = j;
+        ESP_LOGI(WIFI_TAG, "Loading data into packet %u of %u", j, payload->maxPackets);
+        for (; i < sizeof(payload->dat); i++){
+          if (i >= data->imgLen){
+            break;
+          }
+          payload->dat[i] = data->imgData[i];
+        }
+        
+        ESP_LOGI(WIFI_TAG, "Sending packet %u of %u", j, payload->maxPackets);
+        int err = sendto(sock, payload, sizeof(ImgPacket), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+        if (err < 0){
+          ESP_LOGE(WIFI_TAG, "Error occured during send off errno: %d", errno);
+          break;
+        }
+        payload->sequence++;
+        memset(payload->dat,0,sizeof(payload->dat));
+        ESP_LOGI(WIFI_TAG, "DONE with packet: %u", payload->datId);
       }
-      payload.sequence++;
+      
+
+      free(data->imgData);
+
+
+      //vTaskDelay((1000/15) / portTICK_PERIOD_MS);
       vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
-
     
     
   }
+  free(data);
+  free(payload);
   vTaskDelete(NULL);
 }
 
