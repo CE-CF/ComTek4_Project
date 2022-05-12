@@ -287,6 +287,7 @@ if __name__=="__main__":
 	args = parser.parse_args()
 	
 
+
 	if args.space:
 		timeOrSpace = 1
 	
@@ -312,3 +313,4 @@ if __name__=="__main__":
 	# Det her til hver iteration efter
 	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,timeOrSpace,printOut)
 	"""
+

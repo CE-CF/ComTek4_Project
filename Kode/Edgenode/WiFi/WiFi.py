@@ -1,5 +1,6 @@
 import socket
 import struct
+import numpy as np
 
 ##############################################################
 # Setup
@@ -27,58 +28,48 @@ command_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create socket f
 
 
 ##############################################################
+# Variables
+##############################################################
+
+sequenceRef = 0
+
+##############################################################
 # Functions
 ##############################################################
 
-def packer(yaw,pitch):
-    """
-    The packer function packs the yaw and pitch values into a byte string.
-    The yaw and pitch values are passed to the function as arguments,
-    and they are stored in an array of bytes called fullPack. The two numbers
-    are then packed together using struct.pack() which takes two arguments:
-    
-        1) 'hh' - This specifies that we're packing two signed short integers (int).
-    
-        2) The second argument is where the data is actually packed into our bytestring, fullPack. 
-           It's done one after another because struct only packs items in tuples/sequences 
-           (i.e., arrays). Since we have two items here, they get put in there one after another.
-    
-    :param yaw: Used to Control the direction that the drone is facing.
-    :param pitch: Used to Control the pitch of the drone.
-    :return: A byte object that is the concatenation of the two values passed to it.
-    
-    :doc-author: Trelent
-    """
-    fullPack = struct.pack('hh', yaw, pitch)
-
-    return fullPack
-
-
-def Decoder():
-    print("Decoding") # Decode video feed
-
-
 def Receive(BUFFER_SIZE): # Receive videofeed udp
+    """
+    The receive functions receives a package which contains the
+    sequence number, an image and the length of the image.
+    It then unpacks the image into a numpy.array
     
+    :param BUFFER_SIZE: Used to define how big the buffer should be.
+    :returns: image, image length, sequence number
+    """
+    data, addr = video_udp.recvfrom(BUFFER_SIZE) # recieve feed from Sentry uni
+    
+    sequenceNum = data[:2]
+    imgLength = int.from_bytes(data[2:4], big)
+    image = data[4:]
 
-    data, addr = video_udp.recvfrom(BUFFER_SIZE) # recieve feed from Sentry unit 
-
-    return data
-
+    if sequenceNum < sequenceRef:
+        raise ValueError("Old image")
+    if len(image) != int.from_bytes(imgLength, big):
+        raise ValueError("package damaged")
+    sequenceRef = sequenceNum
+    image = np.fromstring(image,np.uint8)
+    return image
 
 def Send(commands): # UDP communication for commands
     command_udp.sendto(commands, Sentry_ADDR) 
 
-
 def tcpSend(commands): # TCP communication for commands
     """
-    The tcpSend function sends commands to the Sentry via TCP.
-    It takes a list of commands as an argument, and sends them one by one.
+    The tcpSend function sends commands to the Sentry unit via TCP.
+    It takes a struct object with bytes and send them.
     
-    :param commands: Used to Send a list of commands to the sentry.
-    :return: The number of bytes sent.
-    
-    :doc-author: Trelent
+    :param commands: Used to Send a struct object of command-bytes to the sentry unit.
+    :returns: Nothing
     """
     command_udp.connect(Sentry_ADDR)
     command_udp.send(commands)
