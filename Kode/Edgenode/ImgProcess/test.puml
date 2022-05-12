@@ -1,0 +1,30 @@
+@startuml
+hide footbox
+
+participant Wifi_submodule
+box "Image_Processing_Submodule"
+participant Load_frame 
+participant HSV
+participant Mask
+participant Noise_reduction
+participant Coordinates 
+end box
+participant Motor_Correction_Submodule 
+Wifi_submodule -> Load_frame:     Bytestream
+activate Load_frame
+Load_frame -> HSV
+deactivate Load_frame
+activate HSV
+HSV -> Mask
+deactivate HSV
+activate Mask
+Mask -> Noise_reduction
+deactivate Mask
+activate Noise_reduction
+Noise_reduction -> Coordinates
+deactivate Noise_reduction
+activate Coordinates
+Coordinates -> Motor_Correction_Submodule: \t\tArray
+deactivate Coordinates
+
+@enduml 
