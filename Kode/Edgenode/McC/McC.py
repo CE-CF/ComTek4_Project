@@ -38,18 +38,19 @@ def _time(f):
         start = time.time()
         r = f(*args)
         end = time.time()
-        if (args[4] == 0):
-        	print("%s with focus on time:    %f second" % (f.__name__, end-start))
-        else:
-        	print("%s with focus on space:   %f second" % (f.__name__, end-start))
+        
         if (args[5]!=0):
 	        if (args[3] == 0):
-	        	print("%s with list creation:   %f seconds" % (f.__name__, end-start))
+	        	if (args[4] == 0):
+		        	print("correctionList with focus on time:     %f second" % (end-start))
+		        else:
+		        	print("correctionList with focus on space:    %f second" % (end-start))
 	        else:
 	        	if (args[4] == 0):
 		        	print("%s with focus on time:    %f second" % (f.__name__, end-start))
 		        else:
 		        	print("%s with focus on space:   %f second" % (f.__name__, end-start))
+
         return r
     return wrapper
 
@@ -305,10 +306,10 @@ if __name__=="__main__":
 	# Det her i starten til setup
 	NumberOfSpeedSettings = 4 		# Number of speed settings the Sentry Unit has
 	cameraFOV = 53					# Camera horizontal FoV
-	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,timeOrSpace,0)
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,1)
 	with open('correctionList.pkl', 'rb') as f:
 		correctionList = pickle.load(f)
 	
 	# Det her til hver iteration efter
-	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,timeOrSpace,printOut)
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,1)
 	"""
