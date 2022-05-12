@@ -8,9 +8,9 @@
 
 
 typedef struct ImgPacket {
-  unsigned int sequence : 32;
+  unsigned int sequence;
   size_t imgLen;
-  uint8_t *imgData;
+  unsigned char *imgData;
 } ImgPacket;
 
 
