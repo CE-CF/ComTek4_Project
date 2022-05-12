@@ -5,12 +5,18 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-
+typedef struct {
+  size_t imgLen;
+  unsigned char *imgData;
+} ImgData;
 
 typedef struct ImgPacket {
   unsigned int sequence;
   size_t imgLen;
-  unsigned char *imgData;
+  unsigned int datId;
+  unsigned int maxPackets;
+  size_t datLen;
+  unsigned char dat[60000];
 } ImgPacket;
 
 

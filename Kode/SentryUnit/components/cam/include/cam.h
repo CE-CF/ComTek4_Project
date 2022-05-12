@@ -25,7 +25,7 @@
 #define PCLK_GPIO_NUM 22
 
 void initCamera();
-void takePic(ImgPacket *dst);
+void takePic(ImgData *dst);
 
 
 #endif

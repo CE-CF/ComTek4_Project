@@ -39,15 +39,18 @@ void initCamera(){
   ESP_LOGI(CAM_TAG, "Camera initialized");
 }
 
-void takePic(ImgPacket *dst){
+void takePic(ImgData *dst){
   camera_fb_t *fb = NULL;
   fb = esp_camera_fb_get();
   if (!fb){
     ESP_LOGE(CAM_TAG, "Camera failed to take picture");
     return;
   }
+  dst->imgData = malloc(sizeof(fb->len));
   dst->imgLen = fb->len;
-  dst->imgData = fb->buf;
+  for (int i=0;i < sizeof(fb->len);i++){
+    dst->imgData[i] = fb->buf[i];
+  }
   esp_camera_fb_return(fb);
 }
     
