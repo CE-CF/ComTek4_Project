@@ -1,7 +1,3 @@
-"""Kilder
-https://stackoverflow.com/questions/58469297/how-do-i-calculate-the-yaw-pitch-and-roll-of-a-point-in-3d
-https://mathinsight.org/spherical_coordinates
-"""
 import os
 from math import atan2, degrees, pi, floor
 import numpy as np
@@ -9,34 +5,43 @@ import pickle
 import time, sys
 import argparse
 
-# update_progress() : Displays or updates a console progress bar
-## Accepts a float between 0 and 1. Any int will be converted to a float.
-## A value under 0 represents a 'halt'.
-## A value at 1 or bigger represents 100%
 def update_progress(progress):
-    barLength = 23 # Modify this to change the length of the progress bar
-    status = ""
-    if isinstance(progress, int):
-        progress = float(progress)
-    if not isinstance(progress, float):
-        progress = 0
-        status = "error: progress var must be float\r\n"
-    if progress < 0:
-        progress = 0
-        status = "Halt...\r\n"
-    if progress >= 1:
-        progress = 1
-        status = "Done...\r\n"
-    block = int(round(barLength*progress))
-    text = "\rCreating correctionList: [{0}] {1}% {2}".format( "#"*block + "-"*(barLength-block), int(progress*100), status)
-    sys.stdout.write(text)
-    sys.stdout.flush()
+	"""
+	Displays or updates a console progress bar
+
+	Args
+		progress (float): Accepts a float between 0 and 1. Any int will be converted to a float. (A value under 0 represents a 'halt'.) (A value at 1 or bigger represents 100%)
+	
+	Returns:
+		progression bar (terminal output)
+	"""
+	barLength = 23 # Modify this to change the length of the progress bar
+	status = ""
+	if isinstance(progress, int):
+		progress = float(progress)
+	if not isinstance(progress, float):
+		progress = 0
+		status = "error: progress var must be float\r\n"
+	if progress < 0:
+		progress = 0
+		status = "Halt...\r\n"
+	if progress >= 1:
+		progress = 1
+		status = "Done...\r\n"
+	block = int(round(barLength*progress))
+	text = "\rCreating correctionList: [{0}] {1}% {2}".format( "#"*block + "-"*(barLength-block), int(progress*100), status)
+	sys.stdout.write(text)
+	sys.stdout.flush()
 
 def _time(f):
     def wrapper(*args):
         start = time.time()
         r = f(*args)
         end = time.time()
+        if (args[4] == 0):
+        	print("%s with focus on time:    %f second" % (f.__name__, end-start))
+        else:
+        	print("%s with focus on space:   %f second" % (f.__name__, end-start))
         if (args[5]!=0):
 	        if (args[3] == 0):
 	        	print("%s with list creation:   %f seconds" % (f.__name__, end-start))
@@ -49,6 +54,17 @@ def _time(f):
     return wrapper
 
 def cameraOrientation(ipList, cameraFOV):
+	"""
+	Calculates what orientation the camera have, either horizontal or vertical
+	
+	Args:
+	    ipList (list): 		Camera coordinates and Drone coordinates
+	    cameraFOV (int):	Camera FOV
+	
+	Returns:
+	    cameraFOVx (int): 	Camera horizontal FOV
+	    cameraFOVy (int):	Camera vertical FOV
+	"""
 	if (ipList[0] > ipList[1]): 
 		cameraFOVx = cameraFOV
 		cameraFOVy = ipList[1]/ipList[0]*cameraFOV
@@ -141,6 +157,7 @@ def getPitchYaw(ipList, xfov, yfov):
 def packData(yDegree, ySpeed, pDegree, pSpeed, numSettings):
 	"""
 	Takes degrees and speedsetting for the Sentry Unit and packs it.	
+	
 	Args:
 	    yDegree (int): 		Sentry Unit yaw movement in degrees
 	    ySpeed (int): 		The correction speed for yaw motor
@@ -152,16 +169,14 @@ def packData(yDegree, ySpeed, pDegree, pSpeed, numSettings):
 	   yawPacked (int):		A bit representation of yaw degree and speed
 	   pitchPacked (int):	A bit representation of pitch degree and speed
 	"""
-	speedSetting = [pow(2,5)*x for x in range(numSettings)]
-	#print(speedSetting)
 	if (yDegree < 0):
-		yawPacked = -(abs(yDegree)+speedSetting[ySpeed])
+		yawPacked = -(abs(yDegree)+(ySpeed<<5))
 	else:
-		yawPacked = yDegree+speedSetting[ySpeed]
+		yawPacked = yDegree+(ySpeed<<5)
 	if (pDegree < 0):
-		pitchPacked = -(abs(pDegree)+speedSetting[pSpeed])
+		pitchPacked = -(abs(pDegree)+(pSpeed<<5))
 	else:
-		pitchPacked = pDegree+speedSetting[pSpeed]
+		pitchPacked = pDegree+(pSpeed<<5)
 	return yawPacked, pitchPacked
 
 @_time
@@ -185,8 +200,8 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, timeOr
 		if (timeOrSpace == 0):
 			pickleList = [[[0 for x in range(2)]for y in range(ipList[1]*2)] for z in range(ipList[0]*2)]
 		else:
-			pickleList = [[[0 for x in range(2)]for y in range(ipList[1]*2)] for z in range(ipList[0]*2)]
-
+			pickleList = [[[0 for x in range(2)]for y in range(ipList[1])] for z in range(ipList[0])]
+		startTime = time.time()
 		for x in range(ipList[0]):
 			if (printOut != 0):
 				update_progress((x/(ipList[0])))
@@ -197,12 +212,11 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, timeOr
 				pSpeed, ySpeed = SpeedSetting(tmpList, numberOfSettings)
 				pitch, yaw = getPitchYaw(tmpList, cameraFOVx, cameraFOVy)
 				yawPacked, pitchPacked = packData(yaw, ySpeed,pitch,pSpeed,numberOfSettings)
-				
 				if (timeOrSpace == 0):
 					pickleList[x][y] = [yawPacked, pitchPacked]
-					pickleList[ipList[0]*2-(x+1)][y] = [-1*yawPacked, pitchPacked]
-					pickleList[x][ipList[1]*2-(y+1)] = [yawPacked, -1*pitchPacked]
-					pickleList[ipList[0]*2-(x+1)][ipList[1]*2-(y+1)] = [-1*yawPacked, -1*pitchPacked]
+					pickleList[(ipList[0])*2-(x+1)][y] = [-1*yawPacked, pitchPacked]
+					pickleList[x][(ipList[1]*2)-(y+1)] = [yawPacked, -1*pitchPacked]
+					pickleList[(ipList[0]*2)-(x+1)][(ipList[1]*2)-(y+1)] = [-1*yawPacked, -1*pitchPacked]
 				else:
 					pickleList[x][y] = [yawPacked, pitchPacked]
 				
@@ -218,16 +232,16 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, timeOr
 		if (ipList[2] <= ipList[0] and ipList[3] <=ipList[1]):
 			yawPacked, pitchPacked = correctionList[ipList[2]][ipList[3]]
 		
-		if (ipList[3] <=ipList[1]):
-			yawPacked, pitchPacked = correctionList[(ipList[0]*2)-ipList[2]][ipList[3]]
+		elif (ipList[3] <=ipList[1]):
+			yawPacked, pitchPacked = correctionList[(ipList[0])*2-(ipList[2])][ipList[3]]
 			yawPacked = -1*yawPacked
 
-		if (ipList[2] <= ipList[0]):
+		elif (ipList[2] <= ipList[0]):
 			yawPacked, pitchPacked = correctionList[ipList[2]][(ipList[1]*2)-ipList[3]]
 			pitchPacked = -1*pitchPacked
 		
 		else:
-			yawPacked, pitchPacked = correctionList[(ipList[0]*2)-ipList[2]][(ipList[1]*2)-ipList[3]]
+			yawPacked, pitchPacked = correctionList[(ipList[2]*2)-ipList[0]][(ipList[1]*2-1)-ipList[3]]
 			yawPacked = -1*yawPacked
 			pitchPacked = -1*pitchPacked
 
@@ -255,7 +269,7 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, timeOr
 
 if __name__=="__main__":   
 
-	ImProcOutput = [960,540,0,1079]	# Test Image Processing submodule output
+	ImProcOutput = [400,300,99,74]	# Test Image Processing submodule output
 
 	NumberOfSpeedSettings = 4 		# Number of speed settings the Sentry Unit has
 	
@@ -287,4 +301,16 @@ if __name__=="__main__":
 			correctionList = pickle.load(f)
 		motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,timeOrSpace,printOut)
 	
+	# ! Til main filen
+	"""
+	# Det her i starten til setup
+	NumberOfSpeedSettings = 4 		# Number of speed settings the Sentry Unit has
+	cameraFOV = 53					# Camera horizontal FoV
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,0,timeOrSpace,0)
+	with open('correctionList.pkl', 'rb') as f:
+		correctionList = pickle.load(f)
+	
+	# Det her til hver iteration efter
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,timeOrSpace,printOut)
+	"""
 
