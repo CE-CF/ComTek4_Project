@@ -25,4 +25,6 @@ void app_main(void)
   initCamera();
 
   connectWifi();
+
+  xTaskCreatePinnedToCore(udpClientTask, "UDP Client", 4096,&takePic,5, NULL, 0 );
 }

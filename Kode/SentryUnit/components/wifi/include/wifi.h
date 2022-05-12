@@ -30,7 +30,7 @@ EventGroupHandle_t wifi_event_group;
 
 
 
-#define EDGE_IP "127.0.0.1"
+#define EDGE_IP "192.168.1.188"
 #define UDP_PORT 2024
 #define TCP_PORT 2025
 
