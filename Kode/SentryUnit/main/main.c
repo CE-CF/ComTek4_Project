@@ -1,7 +1,6 @@
 /* Standard libraries */
 #include <stdio.h>
 
-#include "lwip/sockets.h"
 #include "wifi.h"
 #include "nvs_flash.h"
 #include "cam.h"
@@ -17,6 +16,13 @@ void app_main(void)
   }
 
   ESP_ERROR_CHECK(ret);
+
+  /*
+    For some reason this is needed to initialize Camera...
+    Don't know why, but it makes it work
+   */
+  printf("Free heap:%u\n",xPortGetFreeHeapSize());
+  initCamera();
 
   connectWifi();
 }
