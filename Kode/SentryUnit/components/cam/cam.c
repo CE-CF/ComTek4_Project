@@ -46,7 +46,6 @@ void takePic(ImgPacket *dst){
     ESP_LOGE(CAM_TAG, "Camera failed to take picture");
     return;
   }
-  dst->sequence++;
   dst->imgLen = fb->len;
   dst->imgData = fb->buf;
   esp_camera_fb_return(fb);

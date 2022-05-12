@@ -121,16 +121,20 @@ void udpClientTask(void *pvParameters){
       break;
     }
     ESP_LOGI(WIFI_TAG, "Socket created, sending to %s:%d", EDGE_IP, UDP_PORT);
+    ImgPacket payload;
+    payload.sequence = 0;
 
     while(1){
-      ImgPacket payload;
       void (*tp) (ImgPacket*)=pvParameters;
       tp(&payload);
+
+      ESP_LOGI(WIFI_TAG, "Attempting to send payload:\n\t[SEQ]: %u\n\t[LEN]: %u", payload.sequence, payload.imgLen);
       int err = sendto(sock, &payload, sizeof(payload), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
       if (err < 0){
         ESP_LOGE(WIFI_TAG, "Error occured during send off errno: %d", errno);
         break;
       }
+      payload.sequence++;
       vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 
