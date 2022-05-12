@@ -4,7 +4,7 @@
 #include "packets.h"
 
 
-const char *_TAG = "cam_lib";
+const char *CAM_TAG = "cam_lib";
 
 void initCamera(){
   camera_config_t config;
@@ -33,17 +33,17 @@ void initCamera(){
   config.fb_count = 2;
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK){
-    ESP_LOGE(_TAG, "Camera init failed");
+    ESP_LOGE(CAM_TAG, "Camera init failed");
     return;
   }
-  ESP_LOGI(_TAG, "Camera initialized");
+  ESP_LOGI(CAM_TAG, "Camera initialized");
 }
 
 void takePic(ImgPacket *dst){
   camera_fb_t *fb = NULL;
   fb = esp_camera_fb_get();
   if (!fb){
-    ESP_LOGE(_TAG, "Camera failed to take picture");
+    ESP_LOGE(CAM_TAG, "Camera failed to take picture");
     return;
   }
   dst->sequence++;
