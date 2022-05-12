@@ -13,7 +13,7 @@
 #include "freertos/projdefs.h"
 #include "unistd.h"
 
-const char *_TAG = "wifi_lib";
+const char *WIFI_TAG = "wifi_lib";
 int retry_num = 0;
 
 static void eventHandler(void *arg, esp_event_base_t event_base,
@@ -24,15 +24,15 @@ static void eventHandler(void *arg, esp_event_base_t event_base,
     if (retry_num < WIFI_MAX_RETRIES){
       esp_wifi_connect();
       retry_num++;
-      ESP_LOGI(_TAG, "Retrying AP connection");
+      ESP_LOGI(WIFI_TAG, "Retrying AP connection");
     } else {
       xEventGroupSetBits(wifi_event_group, WIFI_FAIL_BIT);
     }
-    ESP_LOGI(_TAG, "Connection failed");
+    ESP_LOGI(WIFI_TAG, "Connection failed");
   }
   else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP){
     ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-    ESP_LOGI(_TAG, "Got ip:" IPSTR, IP2STR(&event->ip_info.ip));
+    ESP_LOGI(WIFI_TAG, "Got ip:" IPSTR, IP2STR(&event->ip_info.ip));
     retry_num = 0;
     xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
   }
@@ -88,13 +88,13 @@ void connectWifi(){
                                          portMAX_DELAY);
 
   if (bits & WIFI_CONNECTED_BIT) {
-    ESP_LOGI(_TAG, "Connected to AP: %s, PASS: %s",
+    ESP_LOGI(WIFI_TAG, "Connected to AP: %s, PASS: %s",
              SSID, PASS);
   } else if (bits & WIFI_FAIL_BIT) {
-    ESP_LOGI(_TAG, "Failed to connect to AP: %s, with PASS: %s",
+    ESP_LOGI(WIFI_TAG, "Failed to connect to AP: %s, with PASS: %s",
              SSID, PASS);
   } else {
-    ESP_LOGE(_TAG, "IDK WHAT HAPPENED");
+    ESP_LOGE(WIFI_TAG, "IDK WHAT HAPPENED");
   }
 
   
@@ -117,10 +117,10 @@ void udpClientTask(void *pvParameters){
 
     int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
     if (sock < 0){
-      ESP_LOGE(_TAG, "Couldn't create socket");
+      ESP_LOGE(WIFI_TAG, "Couldn't create socket");
       break;
     }
-    ESP_LOGI(_TAG, "Socket created, sending to %s:%d", EDGE_IP, UDP_PORT);
+    ESP_LOGI(WIFI_TAG, "Socket created, sending to %s:%d", EDGE_IP, UDP_PORT);
 
     while(1){
       ImgPacket payload;
@@ -128,7 +128,7 @@ void udpClientTask(void *pvParameters){
       tp(&payload);
       int err = sendto(sock, &payload, sizeof(payload), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
       if (err < 0){
-        ESP_LOGE(_TAG, "Error occured during send off errno: %d", errno);
+        ESP_LOGE(WIFI_TAG, "Error occured during send off errno: %d", errno);
         break;
       }
       vTaskDelay(2000 / portTICK_PERIOD_MS);
