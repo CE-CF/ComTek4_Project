@@ -26,6 +26,6 @@
 
 void initCamera();
 void takePic(ImgData *dst);
-
+void returnCam();
 
 #endif
