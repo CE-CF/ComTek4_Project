@@ -40,5 +40,6 @@ void connectWifi();
   pvParameters should be a reference to the function which takes the pictures
  */
 void udpClientTask(void *pvParameters);
+void tcpServerTask(void *pvParameters);
 
 #endif

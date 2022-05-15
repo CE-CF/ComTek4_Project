@@ -26,5 +26,6 @@ void app_main(void)
 
   connectWifi();
 
-  xTaskCreatePinnedToCore(udpClientTask, "UDP Client", 4096,&takePic,5, NULL, 0 );
+  /* xTaskCreatePinnedToCore(udpClientTask, "UDP Client", 4096,&takePic,5, NULL, 0 ); */
+  xTaskCreatePinnedToCore(tcpServerTask, "TCP Server", 4096,NULL,5, NULL, 0 );
 }
