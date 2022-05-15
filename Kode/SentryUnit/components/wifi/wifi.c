@@ -1,4 +1,5 @@
 #include "wifi.h"
+#include "cam.h"
 #include "lwip/def.h"
 #include "lwip/inet.h"
 #include "lwip/sockets.h"
@@ -105,8 +106,6 @@ void connectWifi(){
 
 // TODO: Setup UDP client for videofeed
 void udpClientTask(void *pvParameters){
-  char rcv_buf[128];
-  char host_ip[] = EDGE_IP;
   int addr_family = AF_INET;
   int ip_protocol = IPPROTO_IP;
 
@@ -114,6 +113,8 @@ void udpClientTask(void *pvParameters){
   ImgData *data;
   data = (ImgData *) malloc(sizeof(ImgData));
   payload = (ImgPacket *) malloc(sizeof(ImgPacket));
+  const size_t buflen = sizeof(payload->dat);
+  const size_t headerSize = sizeof(ImgPacket) - buflen;
 
   ESP_LOGI(WIFI_TAG, "LEFTOVER HEAP SPACE: %u", xPortGetFreeHeapSize());
   while(1){
@@ -138,37 +139,57 @@ void udpClientTask(void *pvParameters){
       /*
         Split data into multiple packets
        */
-      payload->maxPackets = (unsigned int) ceil((float) data->imgLen/sizeof(payload->dat));
+      payload->maxPackets = (unsigned int)
+        ceil((float) data->imgLen/buflen);
       payload->imgLen = data->imgLen;
-      int i = 0;
-      ESP_LOGI(WIFI_TAG, "Got pic with len: %u, splitting into: %u", payload->imgLen, payload->maxPackets);
-      for (int j = 1; j <= payload->maxPackets; j++){
-        payload->datId = j;
-        ESP_LOGI(WIFI_TAG, "Loading data into packet %u of %u", j, payload->maxPackets);
-        for (; i < sizeof(payload->dat); i++){
-          if (i >= data->imgLen){
-            break;
+      payload->datLen = buflen;
+
+      ESP_LOGI(WIFI_TAG, "Got pic with len: %u, splitting into: %u",
+               payload->imgLen, payload->maxPackets);
+      for (int j = 0; j <= payload->maxPackets - 1; j++){
+        payload->datId = j; // Set split packet id
+
+        // Load image data into 
+        ESP_LOGI(WIFI_TAG, "Loading data into packet %u of %u", j +1,
+                 payload->maxPackets);
+        for (int i = 0; i < buflen-1; i++){
+          if (i > payload->imgLen - buflen*j){
+            payload->datLen = i;
+            goto send;
           }
-          payload->dat[i] = data->imgData[i];
+          payload->dat[i] = *data->imgData;
+          data->imgData++;
         }
-        
-        ESP_LOGI(WIFI_TAG, "Sending packet %u of %u", j, payload->maxPackets);
-        int err = sendto(sock, payload, sizeof(ImgPacket), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+
+      send:
+        ESP_LOGI(WIFI_TAG, "Data len: %u", payload->datLen);
+        // =====================================================
+        // Send split packets to Edge node, and check for errors
+        size_t packetSize = headerSize + payload->datLen;
+        ESP_LOGI(WIFI_TAG, "Sending packet %u of %u, with size %u", j + 1,
+                 payload->maxPackets, packetSize);
+        int err = sendto(sock, payload, packetSize, 0,
+                         (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+
+
+        memset(payload->dat,0,buflen); //Clear data array
         if (err < 0){
           ESP_LOGE(WIFI_TAG, "Error occured during send off errno: %d", errno);
           break;
         }
-        payload->sequence++;
-        memset(payload->dat,0,sizeof(payload->dat));
-        ESP_LOGI(WIFI_TAG, "DONE with packet: %u", payload->datId);
+
+
+        ESP_LOGI(WIFI_TAG, "DONE with packet: %u, SEQ: %u", j + 1, payload->sequence);
       }
-      
+      // Free image data from heap, as the next image can have different length
+      data->imgData = NULL;
+      // Return and free the frame buffer
+      returnCam();
 
-      free(data->imgData);
-
-
-      //vTaskDelay((1000/15) / portTICK_PERIOD_MS);
-      vTaskDelay(2000 / portTICK_PERIOD_MS);
+      ESP_LOGI(WIFI_TAG, "===========================================");
+      payload->sequence++; // Increment sequence
+      /* vTaskDelay((1000/15) / portTICK_PERIOD_MS); */
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     
     
