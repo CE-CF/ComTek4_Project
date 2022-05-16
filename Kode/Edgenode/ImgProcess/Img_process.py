@@ -35,7 +35,6 @@ def drone_detection(feed):
         # Calculate frame center
         frame_height_center = height/2
         frame_width_center = width/2
-        print("3") # Statement control
 
         # Reduce the noise on frame with kernel
         opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)

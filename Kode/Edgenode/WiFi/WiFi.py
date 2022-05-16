@@ -12,7 +12,7 @@ FORMAT = 'utf-8'
 
 # Setup ip and ports
 Edge_IP = '192.168.1.123'
-Sentry_IP = '192.168.1.172'
+Sentry_IP = '192.168.1.238'
 
 VIDEO_PORT = 2024
 Command_PORT = 2025
