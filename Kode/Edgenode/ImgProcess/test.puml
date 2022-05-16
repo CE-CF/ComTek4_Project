@@ -7,6 +7,7 @@ participant Load_frame
 participant HSV
 participant Mask
 participant Noise_reduction
+participant Bounding_box
 participant Coordinates 
 end box
 participant Motor_Correction_Submodule 
@@ -21,8 +22,11 @@ activate Mask
 Mask -> Noise_reduction
 deactivate Mask
 activate Noise_reduction
-Noise_reduction -> Coordinates
+Noise_reduction -> Bounding_box
 deactivate Noise_reduction
+activate Bounding_box
+Bounding_box -> Coordinates
+deactivate Bounding_box
 activate Coordinates
 Coordinates -> Motor_Correction_Submodule: \t\tArray
 deactivate Coordinates

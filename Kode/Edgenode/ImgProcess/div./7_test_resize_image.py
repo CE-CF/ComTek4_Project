@@ -1,7 +1,7 @@
 import cv2
 
 # Image path
-path_img = '/home/wrongside/Documents/01 Comtek/01 Semester 4 project/Github/ComTek4_Project/Kode/Edgenode/ImgProcess/implement_image_process_police.png'
+path_img = 'on figure \ref{fig: implement_image_blue}.  '
 
 # Read image
 img = cv2.imread(path_img, cv2.IMREAD_UNCHANGED)
