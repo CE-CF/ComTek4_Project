@@ -38,7 +38,7 @@ def _time(f):
         start = time.time()
         r = f(*args)
         end = time.time()
-        
+
         if (args[5]!=0):
 	        if (args[3] == 0):
 	        	if (args[4] == 0):
@@ -201,7 +201,7 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, timeOr
 		if (timeOrSpace == 0):
 			pickleList = [[[0 for x in range(2)]for y in range(ipList[1]*2)] for z in range(ipList[0]*2)]
 		else:
-			pickleList = [[[0 for x in range(2)]for y in range(ipList[1])] for z in range(ipList[0])]
+			pickleList = [[[0 for x in range(2)]for y in range(ipList[1]+1)] for z in range(ipList[0]+1)]
 		startTime = time.time()
 		for x in range(ipList[0]):
 			if (printOut != 0):
@@ -242,7 +242,7 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, timeOr
 			pitchPacked = -1*pitchPacked
 		
 		else:
-			yawPacked, pitchPacked = correctionList[(ipList[2]*2)-ipList[0]][(ipList[1]*2-1)-ipList[3]]
+			yawPacked, pitchPacked = correctionList[(ipList[2]*2-1)-ipList[0]][(ipList[1]*2-1)-ipList[3]]
 			yawPacked = -1*yawPacked
 			pitchPacked = -1*pitchPacked
 
@@ -288,6 +288,7 @@ if __name__=="__main__":
 	args = parser.parse_args()
 	
 
+
 	if args.space:
 		timeOrSpace = 1
 	
@@ -311,5 +312,6 @@ if __name__=="__main__":
 		correctionList = pickle.load(f)
 	
 	# Det her til hver iteration efter
-	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,1)
+
+	motorCorrection(ImProcOutput,cameraFOV,NumberOfSpeedSettings,correctionList,timeOrSpace,printOut)
 	"""
