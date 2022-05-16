@@ -10,7 +10,7 @@
 import cv2
 
 # Load image, displays it and prints its dimensions.
-path = '/home/wrongside/Documents/01 Comtek/01 Semester 4 project/Github/ComTek4_Project/Kode/Edgenode/ImgProcess/implement_image_process_police.png' 	# Path to image
+path = '/home/wrongside/Documents/01 Comtek/01 Semester 4 project/Github/ComTek4_Project/Kode/Edgenode/ImgProcess/figure/blue_drone.png' 	# Path to image
 img = cv2.imread(path,-1) 																										# Reading the image using imread() function (-1 is default load, 0 is greyscale)
 cv2.imshow('Drone', img) 																										# Display image
 
