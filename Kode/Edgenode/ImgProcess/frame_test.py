@@ -14,14 +14,16 @@ import time
 def drone_detection():
     cam = cv2.VideoCapture(0)
     kernel = numpy.ones((5 ,5), numpy.uint8)
-    print("\n[STREAM] Video stream begins...")
+    print("\n[ANALYSIS] Frame processing begins...")
 
     measure_time = 0
     frames = 0
     try:        
         while True:
                 
-            t_start = time.time()
+            #t_start = time.time()
+            c1 = cv2.getTickCount()
+            
             ret, frame = cam.read()
 
             # Size of video frame
@@ -33,34 +35,41 @@ def drone_detection():
 
             # Convert frame to HSV
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            #print("1") # Statement control
 
             # Turn color range white and the rest black
             mask = cv2.inRange(hsv, lower_color, upper_color)
+            #print("2") # Statement control
 
+            # Calculate frame center
+            frame_height_center = height/2
+            frame_width_center = width/2
+            #print("3") # Statement control
 
-            # Find center of frame and saves in global queue
-            q_h = height/2
-            q_w = width/2
-
-            # Reduce the noise on frame
+            # Reduce the noise on frame with kernel
             opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+            #print("4") # Statement control
 
             # Extract coordinates, width and height of 
             x, y, w, h = cv2.boundingRect(opening)
+            #print("5") # Statement control
 
-            q_x = int(x+w/2)
-            q_y = int(y+h/2)
+            # Calculate drone center
+            drone_height_center = int(y+h/2)
+            drone_width_center = int(x+w/2)
+            #print("6") # Statement control
 
             # Create rectangle and center dot
             cv2.rectangle(frame, (x, y), (x+w, y + h), (0, 255, 0), 3)
-            cv2.circle(frame, (q_x, q_y), 5, (0, 0, 255), -1)
-            
+            cv2.circle(frame, (drone_width_center, drone_height_center), 5, (0, 0, 255), -1)
+            #print("7") # Statement control
+                
             
             # Display video with rectangle and center dot
             #cv2.imshow('HSV', hsv)
             #cv2.imshow('Mask', mask)
             #cv2.imshow('Noise reduction', opening)
-            #cv2.imshow('Detection', frame)
+            cv2.imshow('Detection', frame)
             
             #print(f"Frame center: {int(width/2)},{int(height/2)}\t Drone center: {x},{y}")   
 
@@ -68,10 +77,12 @@ def drone_detection():
             key=cv2.waitKey(5)
             if key == ord('q'):
                 return
-            t_end = time.time()
             
+            c2 = cv2.getTickCount()
+            measure_time += (c2-c1)/cv2.getTickFrequency()
 
-            measure_time += t_end-t_start
+            #t_end = time.time()
+            #measure_time += t_end-t_start
             
 
             #if frames == 100:
@@ -79,7 +90,9 @@ def drone_detection():
             frames += 1
             if frames == 1000:
                 print(f"Average time for 1000 frames: {measure_time/1000}")
-            #print(frames)
+                break
+
+
 
     except:
         print("Papas mor")
