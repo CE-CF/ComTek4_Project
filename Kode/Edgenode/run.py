@@ -57,13 +57,15 @@ def Receiver(BUFFER_SIZE):
 ##############################
 
 def tcpSender():
+    connect = 0
     while(1):
         try:
-            if detected == 1:
-                Pack = struct.pack('hh', yawC.get(), pitchC.get())
-                print("sending commands..")
-                net.Send(packet)
-                print("commands sent")
+            if detected.get() == 1:
+                packet = struct.pack('hh', yawC.get(), pitchC.get())
+                #print("sending commands..")
+                net.tcpSend(packet,connect)
+                #print("commands sent")
+                connect = 1
         except:
             print("Failed to send...")
 
@@ -83,14 +85,12 @@ def imageProcessProcess():
         else:
             DAmount = DAmount + 1
         if DAmount > 4:
-            # print(w,h,c1,c2)
+            #print(c1,c2,d1, d2)
             center1.set(c2)
             center2.set(c1)
             drone1.set(d1)
             drone2.set(d2)
-            print("Setting True")
             detected.set(1)
-            print("Setting True")
 
 ##############################
 # Motor Correction function
@@ -98,21 +98,25 @@ def imageProcessProcess():
 
 def McCorrection():
     correctionList = 0
-    print()
     while(1):
+        # print(f'detected: {detected.get()}')
         if detected.get() == 1:
-            print("HEJ")
-            if created.get() == 1:
-                print("1")
+            # print(f'created: {created.get()}')
+            if created.get() != 1:
+                created.set(1)
+                imgList = [center1.get(), center2.get(), drone1.get(), drone2.get()]
+                yaw, pitch = correction.motorCorrection(imgList, 53, 4,correctionList,1,0)
+                yawC.set(yaw)
+                pitchC.set(pitch)
+                with open("/home/madss/Documents/school/4S/projekt/ComTek4_Project/correctionList.pkl", 'rb') as f:
+                    correctionList = pickle.load(f)
+            else: 
                 imgList = [center1.get(), center2.get(), drone1.get(), drone2.get()]
                 print(imgList)
-                yawC, pitchC = correction.motorCorrection(imgList, 53, 4,correctionList,0,0)
-                print(yawC)
-            else:
-                created.set(1)
-                yawC, pitchC = correction.motorCorrection(imgList, 53, 4,correctionList,0,0)
-                with open('McC/correctionList.pkl', 'rb') as f:
-                    correctionList = pickle.load(f)
+                yaw, pitch = correction.motorCorrection(imgList, 53, 4,correctionList,1,0)
+                yawC.set(yaw)
+                pitchC.set(pitch)
+  
 
 ##############################################################
 # Main

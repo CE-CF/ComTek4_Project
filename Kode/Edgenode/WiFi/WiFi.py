@@ -25,7 +25,8 @@ Sentry_ADDR = (Sentry_IP, Command_PORT) # Sentry unit address
 video_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Find local ip and Input ip and socket into video_udp
 video_udp.bind(Edgenode_ADDR) # Bind socket to ip and port.
 #video_udp.settimeout(2) # set timeout for the receiving socket such that it gives an error if exceeded.
-command_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create socket for commands
+command_udp = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Create socket for commands
+command_udp.settimeout(2)
 
 
 ##############################################################
@@ -89,7 +90,7 @@ def Receive(BUFFER_SIZE): # Receive videofeed udp
 def Send(commands): # UDP communication for commands
     command_udp.sendto(commands, Sentry_ADDR) 
 
-def tcpSend(commands): # TCP communication for commands
+def tcpSend(commands,connect): # TCP communication for commands
     """
     The tcpSend function sends commands to the Sentry unit via TCP.
     It takes a struct object with bytes and send them.
@@ -97,8 +98,11 @@ def tcpSend(commands): # TCP communication for commands
     :param commands: Used to Send a struct object of command-bytes to the sentry unit.
     :returns: Nothing
     """
-    command_udp.connect(Sentry_ADDR)
-    command_udp.send(commands)
-    command_udp.close()
+    try:
+        command_udp.sendall(commands)
+    except:
+        command_udp.connect(Sentry_ADDR)
+        command_udp.sendall(commands)
+    #command_udp.close()
 
 # Receive(65000)
