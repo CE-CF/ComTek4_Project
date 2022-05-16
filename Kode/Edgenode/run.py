@@ -5,7 +5,7 @@ import multiprocessing as mp
 import socket, time, struct, math
 import numpy as np
 import cv2
-
+import pickle
 
 ##############################################################
 # Renaming
@@ -18,20 +18,20 @@ manager = mp.Manager()
 # Variables
 ##############################################################
 
-bufferSize = 100000
+bufferSize = 65000
 
 ##############################################################
 # Variables: Shared memory
 ##############################################################
 
 sharedFeed = manager.Value(bytes, 0xff)
-detected = manager.Value(bool, False)
+detected = manager.Value(int, 0)
 created = manager.Value(int, 0)
 
-Height = manager.Value(int, 0)
-Width = manager.Value(int, 0)
 center1 = manager.Value(int, 0)
 center2 = manager.Value(int, 0)
+drone1 = manager.Value(int, 0)
+drone2 = manager.Value(int, 0)
 
 yawC = manager.Value(int, 0)
 pitchC = manager.Value(int, 0)
@@ -59,7 +59,7 @@ def Receiver(BUFFER_SIZE):
 def tcpSender():
     while(1):
         try:
-            if detected == True:
+            if detected == 1:
                 Pack = struct.pack('hh', yawC.get(), pitchC.get())
                 print("sending commands..")
                 net.Send(packet)
@@ -72,31 +72,47 @@ def tcpSender():
 ##############################
 
 def imageProcessProcess():
+    DAmount = 0
+    time.sleep(5)
     while(1):
-        if c1 and c2 == 0:
+        # print("here")
+        c1, c2, d1, d2 = analysis.drone_detection(sharedFeed.get())
+        if d1 and d2 == 0:
             DAmount = 0
-            detected.set(False)
+            detected.set(0)
         else:
             DAmount = DAmount + 1
-            if DAmount > 4:
-                w, h, c1, c2 = analysis.drone_detection(sharedFeed.get())
-                Height.set(h)
-                Width.set(w)
-                center1.set(c1)
-                center2.set(c2)
-                detected.set(True)
+        if DAmount > 4:
+            # print(w,h,c1,c2)
+            center1.set(c2)
+            center2.set(c1)
+            drone1.set(d1)
+            drone2.set(d2)
+            print("Setting True")
+            detected.set(1)
+            print("Setting True")
 
 ##############################
 # Motor Correction function
 ##############################
 
 def McCorrection():
+    correctionList = 0
+    print()
     while(1):
-        if detected.get() == True:
-            imgList = [Width.get(), Height.get(), center1.get(), center2.get()]
-            yawC, pitchC = correction.motorCorrection(imgList, 53, 4,created.get(),0)
-            if created.get() == 0:
+        if detected.get() == 1:
+            print("HEJ")
+            if created.get() == 1:
+                print("1")
+                imgList = [center1.get(), center2.get(), drone1.get(), drone2.get()]
+                print(imgList)
+                yawC, pitchC = correction.motorCorrection(imgList, 53, 4,correctionList,0,0)
+                print(yawC)
+            else:
                 created.set(1)
+                yawC, pitchC = correction.motorCorrection(imgList, 53, 4,correctionList,0,0)
+                with open('McC/correctionList.pkl', 'rb') as f:
+                    correctionList = pickle.load(f)
 
 ##############################################################
 # Main
@@ -105,7 +121,7 @@ def McCorrection():
 if __name__ == '__main__':
     try:
         sendProcess = mp.Process(target=tcpSender,)
-        receiveProcess = mp.Process(target=Receiver, args=(bufferSize))
+        receiveProcess = mp.Process(target=Receiver, args=(bufferSize,))
         imgProcessor = mp.Process(target=imageProcessProcess,)
         McCProcess = mp.Process(target=McCorrection,)
 

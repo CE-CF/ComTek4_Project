@@ -8,23 +8,20 @@ import numpy
 import threading
 import urllib.request
 
-url='http://192.168.1.238/cam-mid.jpg'
-
 # Video stream from webcam  
 def drone_detection(feed):
     kernel = numpy.ones((5 ,5), numpy.uint8)
     print("\n[STREAM] Video stream begins...")
 
     try:
-        frame=cv2.imdecode(feed, cv2.IMREAD_COLOR)
-
+        feed = numpy.fromstring(feed,numpy.uint8)
+        frame = cv2.imdecode(feed, cv2.IMREAD_COLOR)
         # Size of video frame
         height, width = frame.shape[:2]
         
         # Find center of frame and saves in global queue
         q_h = height/2
         q_w = width/2
-
         # Lower and upper bound of color [B, G, R]
         lower_color = numpy.array([110, 70, 70])
         upper_color = numpy.array([130, 255, 255])
@@ -54,7 +51,7 @@ def drone_detection(feed):
         key=cv2.waitKey(5)
         if key == ord('q'):
             return
-        return(q_h, q_w, q_x, q_y)
+        return (q_h, q_w, q_x, q_y)
     except:
         print("Papas mor")
-        pass
+        return (0, 0, 0, 0)
