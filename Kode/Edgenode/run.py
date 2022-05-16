@@ -1,11 +1,13 @@
 import WiFi.WiFi
 import ImgProcess.Img_process as analysis
 import McC.McC as correction
+import GUI.gui as dinmor
 import multiprocessing as mp
 import socket, time, struct, math
 import numpy as np
 import cv2
 import pickle
+
 
 ##############################################################
 # Renaming
@@ -116,6 +118,15 @@ def McCorrection():
                 yawC.set(yaw)
                 pitchC.set(pitch)
   
+##############################
+# Gui function 
+##############################
+
+def Guiprocessfunction():
+    time.sleep(5)
+    while(1):
+        dinmor.gui(sharedFeed.get(),yawC.get(),pitchC.get())
+       
 
 ##############################################################
 # Main
@@ -127,19 +138,23 @@ if __name__ == '__main__':
         receiveProcess = mp.Process(target=Receiver, args=(bufferSize,))
         imgProcessor = mp.Process(target=imageProcessProcess,)
         McCProcess = mp.Process(target=McCorrection,)
+        # Guiprocess = mp.Process(target=Guiprocessfunction(),)
 
         receiveProcess.start()
         sendProcess.start()
         imgProcessor.start()
         McCProcess.start()
+        # Guiprocess.start()
         receiveProcess.join()
         sendProcess.join()
         imgProcessor.join()
         McCProcess.join()
+        # Guiprocess.join()
     except KeyboardInterrupt:
         print("Shutting down....")
         sendProcess.terminate()
         receiveProcess.terminate()
         imgProcessor.terminate()
         McCProcess.terminate()
+        # Guiprocess.terminate()
         print("Bye")

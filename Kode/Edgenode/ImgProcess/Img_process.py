@@ -18,7 +18,6 @@ def drone_detection(feed):
         frame = cv2.imdecode(feed, cv2.IMREAD_COLOR)
         # Size of video frame
         height, width = frame.shape[:2]
-        
         # Find center of frame and saves in global queue
         q_h = int(height/2)
         q_w = int(width/2)
@@ -31,10 +30,6 @@ def drone_detection(feed):
 
         # Turn color range white and the rest black
         mask = cv2.inRange(hsv, lower_color, upper_color)
-
-        # Calculate frame center
-        frame_height_center = height/2
-        frame_width_center = width/2
 
         # Reduce the noise on frame with kernel
         opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
@@ -50,12 +45,12 @@ def drone_detection(feed):
         q_x = int(x+w/2)
         q_y = int(y+h/2)
 
-        # Display video with rectangle and center dot
         cv2.imshow('Color detection', frame)
+
         key=cv2.waitKey(5)
         if key == ord('q'):
             return
         return (q_h, q_w, q_x, q_y)
     except:
-        print("Papas mor")
+        print("Img fejl")
         return (0, 0, 0, 0)

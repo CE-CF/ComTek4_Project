@@ -32,6 +32,10 @@ def gui(feed, yaw, pitch):
         # Turn color range white and the rest black
         mask = cv2.inRange(hsv, lower_color, upper_color)
 
+        # Calculate frame center
+        frame_height_center = height/2
+        frame_width_center = width/2
+
         # Reduce the noise on frame
         opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
@@ -46,27 +50,28 @@ def gui(feed, yaw, pitch):
         q_x = int(x+w/2)
         q_y = int(y+h/2)
 
+        print("din")
         font = cv2.FONT_HERSHEY_SIMPLEX
 
         if (yaw<0):
-            yawText = f'Yaw:\nDEG: {-(abs(yaw)%32):4d} | SS {(floor(abs(yaw)/32)):7d}'
+            yawText = f'Yaw:DEG: {-(abs(yaw)%32):4d} | SS {(floor(abs(yaw)/32)):7d}'
         else:
-            yawText = f'Yaw:\nDEG: {(abs(yaw)%32):4d} | SS {(floor(abs(yaw)/32)):7d}'
+            yawText = f'Yaw:DEG: {(abs(yaw)%32):4d} | SS {(floor(abs(yaw)/32)):7d}'
 
         if (pitch<0):
-            pitchText = f'Pitch:\nDEG: {-(abs(pitch)%32):4d} | SS {(floor(abs(pitch)/32)):7d}'
+            pitchText = f'Pitch:DEG: {-(abs(pitch)%32):4d} | SS {(floor(abs(pitch)/32)):7d}'
         else:
-            pitchText = f'Pitch:\nDEG: {(abs(pitch)%32):4d} | SS {(floor(abs(pitch)/32)):7d}'
-
+            pitchText = f'Pitch:DEG: {(abs(pitch)%32):4d} | SS {(floor(abs(pitch)/32)):7d}'
+        print("mor")
         
-        cv2.putText(frame, yawText,(x+w/4, y+h+25), font, 1, (0, 255, 255), 2, cv2.LINE_4)
-        cv2.putText(frame, pitchText,(x+(w/4)*3, y+h+25), font, 1, (0, 255, 255), 2, cv2.LINE_4)
+        cv2.putText(frame, yawText,(x+w/4, y+h+5), font, 1, (0, 255, 255), 2, cv2.LINE_4)
+        cv2.putText(frame, pitchText,(x+(w/4)*3, y+h+5), font, 1, (0, 255, 255), 2, cv2.LINE_4)
         # Display video with rectangle and center dot
         cv2.imshow('Color detection', frame)
         key=cv2.waitKey(5)
         if key == ord('q'):
             return
-        return (q_h, q_w, q_x, q_y)
+        return
     except:
-        print("Papas mor")
-        return (0, 0, 0, 0)
+        print("GUi fejl")
+        return
