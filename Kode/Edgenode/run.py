@@ -112,7 +112,6 @@ def McCorrection():
                     correctionList = pickle.load(f)
             else: 
                 imgList = [center1.get(), center2.get(), drone1.get(), drone2.get()]
-                print(imgList)
                 yaw, pitch = correction.motorCorrection(imgList, 53, 4,correctionList,1,0)
                 yawC.set(yaw)
                 pitchC.set(pitch)
