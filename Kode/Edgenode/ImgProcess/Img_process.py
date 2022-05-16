@@ -8,6 +8,8 @@ import numpy
 import threading
 import urllib.request
 
+
+        
 # Video stream from webcam  
 def drone_detection(feed):
     kernel = numpy.ones((5 ,5), numpy.uint8)
@@ -21,6 +23,7 @@ def drone_detection(feed):
         # Find center of frame and saves in global queue
         q_h = int(height/2)
         q_w = int(width/2)
+        
         # Lower and upper bound of color [B, G, R]
         lower_color = numpy.array([110, 70, 70])
         upper_color = numpy.array([130, 255, 255])
