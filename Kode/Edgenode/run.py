@@ -1,10 +1,11 @@
 import WiFi.WiFi
 import ImgProcess.Img_process as analysis
+import McC.McC as correction
 import multiprocessing as mp
 import socket, time, struct, math
 import numpy as np
 import cv2
-
+import pickle
 
 ##############################################################
 # Renaming
@@ -14,59 +15,108 @@ net = WiFi.WiFi
 manager = mp.Manager()
 
 ##############################################################
+# Variables
+##############################################################
+
+bufferSize = 65000
+
+##############################################################
 # Variables: Shared memory
 ##############################################################
 
-number = manager.Value('H', 0)
-coordlist = manager.list([0,0,0,0])
+sharedFeed = manager.Value(bytes, 0xff)
+detected = manager.Value(int, 0)
+created = manager.Value(int, 0)
 
-data = manager.Value(bytes, 0xff)
-yaw = 0
-pitch = 0
-detected = manager.Value(bool, False)
+center1 = manager.Value(int, 0)
+center2 = manager.Value(int, 0)
+drone1 = manager.Value(int, 0)
+drone2 = manager.Value(int, 0)
 
-heightShared = manager.Value(int, 0)
-widthShared = manager.Value(int, 0)
-xShared = manager.Value(int, 0)
-yShared = manager.Value(int, 0)
-
-
-image_arr = 0
+yawC = manager.Value(int, 0)
+pitchC = manager.Value(int, 0)
 
 ##############################################################
 # Functions
 ##############################################################
 
-def Receiver(BUFFER_SIZE, number):
+##############################
+# Receive function
+##############################
+
+def Receiver(BUFFER_SIZE):
     while(1):
         try:
-            #data = b''
-            #data = net.Receive(BUFFER_SIZE)
-            #print(data)
-            #image_arr = np.frombuffer(data,np.uint8)
-            print(analysis.drone_detection(image_arr))
+            image = net.Receive(BUFFER_SIZE)
+            sharedFeed.set(image)
         except:
-            print("")
+            print("Failed to receive...")
 
-def tcpSender(yaw, pitch, number):
-    tal = 0
+##############################
+# Send function
+##############################
+
+def tcpSender():
+    connect = 0
     while(1):
-        time.sleep(1)
-        packet = net.packer(-154, 154)
-        if detected == True:
-            print("sending commands")
-            net.Send(packet)
-        else:
-            print("Sending null commands")
-            net.Send(packet)
-            tal = tal + 1
-            number.set(tal)
+        try:
+            if detected.get() == 1:
+                packet = struct.pack('hh', yawC.get(), pitchC.get())
+                #print("sending commands..")
+                net.tcpSend(packet,connect)
+                #print("commands sent")
+                connect = 1
+        except:
+            print("Failed to send...")
+
+##############################
+# Image Processing function
+##############################
 
 def imageProcessProcess():
+    DAmount = 0
+    time.sleep(5)
     while(1):
-        feed = data.get
-        #Height, width, x, y = analysis.drone_detection(feed)
-        analysis.drone_detection(feed)
+        # print("here")
+        c1, c2, d1, d2 = analysis.drone_detection(sharedFeed.get())
+        if d1 and d2 == 0:
+            DAmount = 0
+            detected.set(0)
+        else:
+            DAmount = DAmount + 1
+        if DAmount > 4:
+            #print(c1,c2,d1, d2)
+            center1.set(c2)
+            center2.set(c1)
+            drone1.set(d1)
+            drone2.set(d2)
+            detected.set(1)
+
+##############################
+# Motor Correction function
+##############################
+
+def McCorrection():
+    correctionList = 0
+    while(1):
+        # print(f'detected: {detected.get()}')
+        if detected.get() == 1:
+            # print(f'created: {created.get()}')
+            if created.get() != 1:
+                created.set(1)
+                imgList = [center1.get(), center2.get(), drone1.get(), drone2.get()]
+                yaw, pitch = correction.motorCorrection(imgList, 53, 4,correctionList,1,0)
+                yawC.set(yaw)
+                pitchC.set(pitch)
+                with open("/home/madss/Documents/school/4S/projekt/ComTek4_Project/correctionList.pkl", 'rb') as f:
+                    correctionList = pickle.load(f)
+            else: 
+                imgList = [center1.get(), center2.get(), drone1.get(), drone2.get()]
+                print(imgList)
+                yaw, pitch = correction.motorCorrection(imgList, 53, 4,correctionList,1,0)
+                yawC.set(yaw)
+                pitchC.set(pitch)
+  
 
 ##############################################################
 # Main
@@ -74,18 +124,23 @@ def imageProcessProcess():
 
 if __name__ == '__main__':
     try:
-        sendProcess = mp.Process(target=tcpSender, args=(yaw, pitch, number))
-        receiveProcess = mp.Process(target=Receiver, args=(2048,number))
-        #imgProcessor = mp.Process(target=imageProcessProcess,)
+        sendProcess = mp.Process(target=tcpSender,)
+        receiveProcess = mp.Process(target=Receiver, args=(bufferSize,))
+        imgProcessor = mp.Process(target=imageProcessProcess,)
+        McCProcess = mp.Process(target=McCorrection,)
 
         receiveProcess.start()
-        #sendProcess.start()
-        #imgProcessor.start()
+        sendProcess.start()
+        imgProcessor.start()
+        McCProcess.start()
         receiveProcess.join()
-        #sendProcess.join()
-        #imgProcessor.join()
+        sendProcess.join()
+        imgProcessor.join()
+        McCProcess.join()
     except KeyboardInterrupt:
         print("Shutting down....")
-        #sendProcess.terminate()
+        sendProcess.terminate()
         receiveProcess.terminate()
+        imgProcessor.terminate()
+        McCProcess.terminate()
         print("Bye")
