@@ -28,8 +28,8 @@ def drone_detection(q_h, q_w, q_x, q_y):
             q_w.put(width/2)
             
             # Lower and upper bound of color [B, G, R]
-            lower_color = numpy.array([110, 70, 70])      
-            upper_color = numpy.array([130, 255, 255])
+            lower_color = numpy.array([110, 70, 70])       
+            upper_color = numpy.array([130, 255, 255]) 
 
             # Convert frame to HSV
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -50,6 +50,9 @@ def drone_detection(q_h, q_w, q_x, q_y):
             #   
             q_x.put(int(x+w/2))
             q_y.put(int(y+h/2))
+
+            # Display video of mask frame
+            cv2.imshow('Mask frame', mask)
 
             # Display video with rectangle and center dot
             cv2.imshow('Color detection', frame)
