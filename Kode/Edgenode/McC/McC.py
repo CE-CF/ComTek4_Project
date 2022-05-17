@@ -234,15 +234,15 @@ def motorCorrection(ipList,cameraFOV, numberOfSettings, correctionList=0, timeOr
 			yawPacked, pitchPacked = correctionList[ipList[2]][ipList[3]]
 		
 		elif (ipList[3] <=ipList[1]):
-			yawPacked, pitchPacked = correctionList[(ipList[0])*2-(ipList[2])][ipList[3]]
+			yawPacked, pitchPacked = correctionList[(ipList[0])*2-(ipList[2]+1)][ipList[3]]
 			yawPacked = -1*yawPacked
 
 		elif (ipList[2] <= ipList[0]):
-			yawPacked, pitchPacked = correctionList[ipList[2]][(ipList[1]*2)-ipList[3]]
+			yawPacked, pitchPacked = correctionList[ipList[2]][(ipList[1]*2)-(ipList[3]+1)]
 			pitchPacked = -1*pitchPacked
 		
 		else:
-			yawPacked, pitchPacked = correctionList[(ipList[2]*2-1)-ipList[0]][(ipList[1]*2-1)-ipList[3]]
+			yawPacked, pitchPacked = correctionList[(ipList[0]*2)-(ipList[0]+1)][(ipList[1]*2)-(ipList[3]+1)]
 			yawPacked = -1*yawPacked
 			pitchPacked = -1*pitchPacked
 
