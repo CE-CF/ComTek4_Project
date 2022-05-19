@@ -2,8 +2,7 @@
 #include "packets.h"
 
 void dumpCmdPacket(CmdPacket packet){
-  puts("[CmdPacket content]:");
-  printf("Length: %u\n", sizeof(packet));
+  /* printf("Length: %u\n", sizeof(packet)); */
   printf("Yaw values:\n\tsign: %u\n\tspeed: %u\n\tangle: %u\n",
          packet.yawVals.sign, packet.yawVals.speed, packet.yawVals.angle);
   printf("Pitch values:\n\tsign: %u\n\tspeed: %u\n\tangle: %u\n",
@@ -23,7 +22,7 @@ pVals byte2pVal(unsigned int byte){
 CmdPacket char2packet(char *src){
   pVals yaw, pitch;
   yaw = byte2pVal(src[0] & 0xFF);
-  pitch = byte2pVal(src[2] & 0xFF);
+  pitch = byte2pVal(src[1] & 0xFF);
 
   CmdPacket result = {
     .yawVals = yaw,

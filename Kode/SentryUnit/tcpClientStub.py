@@ -19,18 +19,26 @@ def createCmd(angle, speed):
 
 
 def packCmds(yawCmd, pitchCmd):
-    return struct.pack("<hh", yawCmd, pitchCmd)
+    return struct.pack("<BB", yawCmd , pitchCmd )
 
 
-yaw = createCmd(31, 3)
-pitch = createCmd(25, 2)
-
-res = packCmds(yaw, pitch)
-print(res, len(res))
-print(bin(res[0]), bin(res[2]))
 
 s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-s.connect(('192.168.1.48', 2025))
+s.connect(('172.26.24.184', 2025))
+yawAngles = [0, -15, 20, 14, -3]
+yawSpeed  = [0,  1,  3,  2, 0]
+pitchAngles = [0, 23, -12, 24, 6]
+pitchSpeed  = [2,  1,  1,  2, 3]
 
-s.sendall(res)
+for i in range(len(yawAngles)):
+    print(f"""Sending command with values:
+Yaw angle: {yawAngles[i]}
+Yaw speed: {yawSpeed[i]}
+Pitch angle: {pitchAngles[i]}
+Pitch speed: {pitchSpeed[i]}
+""")
+    yaw = createCmd(yawAngles[i], yawSpeed[i])
+    pitch = createCmd(pitchAngles[i], pitchSpeed[i])
+    res = packCmds(yaw, pitch)
+    s.sendall(res)
 s.close()

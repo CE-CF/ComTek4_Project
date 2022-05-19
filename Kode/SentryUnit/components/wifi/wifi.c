@@ -107,6 +107,8 @@ void connectWifi(){
 void udpClientTask(void *pvParameters){
   int addr_family = AF_INET;
   int ip_protocol = IPPROTO_IP;
+  TickType_t lastRun;
+  const TickType_t freq = pdMS_TO_TICKS(1000/15);
 
   ImgPacket *payload;
   ImgData *data;
@@ -133,6 +135,7 @@ void udpClientTask(void *pvParameters){
     payload->sequence = 0;
 
     while(1){
+      lastRun = xTaskGetTickCount();
       void (*tp) (ImgData*)=pvParameters;
       tp(data);
       /*
@@ -187,8 +190,9 @@ void udpClientTask(void *pvParameters){
 
       ESP_LOGI(WIFI_TAG, "===========================================");
       payload->sequence++; // Increment sequence
-      /* vTaskDelay((1000/15) / portTICK_PERIOD_MS); */
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      /* long end = xTaskGetTickCount() - lastRun; */
+      /* vTaskDelay((1000/15 - end) / portTICK_PERIOD_MS); */
+      xTaskDelayUntil(&lastRun, freq);
     }
     
     
@@ -199,7 +203,7 @@ void udpClientTask(void *pvParameters){
 }
 void handlePacket(const int sock){
   int len;
-  char rcvPacket[5];
+  char rcvPacket[3];
 
   do{
     len = recv(sock, rcvPacket, sizeof(rcvPacket)-1, 0);
@@ -209,8 +213,6 @@ void handlePacket(const int sock){
       ESP_LOGW(WIFI_TAG, "Connection closed");
     } else {
       rcvPacket[len] = 0; // Null-terminate whatever is received and treat it like a string
-      ESP_LOGI(WIFI_TAG, "Received %d bytes: %s", len, rcvPacket);
-
       CmdPacket rcvCmds = char2packet(rcvPacket);
       dumpCmdPacket(rcvCmds);
 
