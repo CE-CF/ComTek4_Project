@@ -8,6 +8,7 @@ import numpy
 import threading
 import urllib.request
 
+# cv2.namedWindow('Color detection', cv2.WINDOW_AUTOSIZE)
 
         
 # Video stream from webcam  
@@ -47,13 +48,8 @@ def drone_detection(feed):
         #  
         q_x = int(x+w/2)
         q_y = int(y+h/2)
-
-        cv2.imshow('Color detection', frame)
-
-        key=cv2.waitKey(5)
-        if key == ord('q'):
-            return
+        
         return (q_h, q_w, q_x, q_y)
     except:
-        print("Img fejl")
+        # print("Img fejl")
         return (0, 0, 0, 0)

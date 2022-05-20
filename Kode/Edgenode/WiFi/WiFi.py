@@ -28,18 +28,11 @@ video_udp.bind(Edgenode_ADDR) # Bind socket to ip and port.
 command_udp = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Create socket for commands
 command_udp.settimeout(2)
 
-
-##############################################################
-# Variables
-##############################################################
-
-sequenceRef = 0
-
 ##############################################################
 # Functions
 ##############################################################
 
-def Receive(BUFFER_SIZE): # Receive videofeed udp
+def Receive(BUFFER_SIZE, oldnum): # Receive videofeed udp
     # timestart = time.time()
     """
     The receive functions receives a package which contains the
@@ -50,42 +43,36 @@ def Receive(BUFFER_SIZE): # Receive videofeed udp
     :returns: image, image length, sequence number
     """
 
-    data, addr = video_udp.recvfrom(BUFFER_SIZE) # recieve feed from Sentry uni
+    data, addr = video_udp.recvfrom(BUFFER_SIZE) # recieve feed from Sentry unit
     header = data[:20]
     sequenceNum, imgLen, datid, totalpackets, datalen = struct.unpack("<IIIII", header)
 
     imageLength = imgLen
     imagearr = [data[20:]]
+    # print("Pakke: ",datid, " Ud af: ", totalpackets)
+    oldSequenceNum = sequenceNum
+    
+    if totalpackets != 1:
+        while True:
+            data, addr = video_udp.recvfrom(BUFFER_SIZE) # recieve feed from Sentry unit
+            header = data[:20]
+            sequenceNum, imgLen, datid, totalpackets, datalen = struct.unpack("<IIIII", header)
+            if sequenceNum <= oldSequenceNum:
+                sequenceNum = 0
+                raise("Received old packets")
+            oldSequenceNum == sequenceNum
+            # print("Pakke: ",datid, " Ud af: ", totalpackets)
+            imagearr.append(data[20:])
+            if datid >= totalpackets-1:
+                break
 
-    for i in range (totalpackets-1):
-        data, addr = video_udp.recvfrom(BUFFER_SIZE) # recieve feed from Sentry unit
-        # header = data[:20]
-        # a, b, c, d, add = struct.unpack("<IIIII", header)
-        # datalen = datalen + add
-        imagearr.append(data[20:])
+    # for i in range (totalpackets-1):
+    #     data, addr = video_udp.recvfrom(BUFFER_SIZE) # recieve feed from Sentry unit
+    #     imagearr.append(data[20:])
      
-    # print(datalen)
-    # print(imageLength)
-
     fullimage = b''.join(imagearr)
 
-    # with open("dinmorstring.jpg", 'wb') as f:
-    #     f.write(fullimage)
-    # timeend = time.time()
-
-    # print(timeend - timestart)
-    # if sequenceNum < sequenceRef:
-    #     raise ValueError("Old image")
-
-    
-    # sequenceRef = sequenceNum
-
-    # if len(image) != int.from_bytes(imageLength, big):
-    #     raise ValueError("package damaged")
-
-
-    # image = np.fromstring(image,np.uint8)
-    return fullimage
+    return fullimage, oldSequenceNum
 
 def Send(commands): # UDP communication for commands
     command_udp.sendto(commands, Sentry_ADDR) 
@@ -105,4 +92,6 @@ def tcpSend(commands,connect): # TCP communication for commands
         command_udp.sendall(commands)
     #command_udp.close()
 
-# Receive(65000)
+def closeDown():
+    command_udp.close()
+
