@@ -63,7 +63,7 @@ def drone_detection():
             cv2.rectangle(frame, (x, y), (x+w, y + h), (0, 255, 0), 3)
             cv2.circle(frame, (drone_width_center, drone_height_center), 5, (0, 0, 255), -1)
             #print("7") # Statement control
-                
+             
             
             # Display video with rectangle and center dot
             #cv2.imshow('HSV', hsv)
@@ -98,7 +98,10 @@ def drone_detection():
         print("Papas mor")
         pass
 
+
+
 if __name__ == "__main__":
+
 
     drone_detection()
 

@@ -1,7 +1,7 @@
 @startuml
 hide footbox
 
-participant Wifi_submodule
+participant Communication
 box "Image_Processing_Submodule"
 participant Load_frame 
 participant HSV
@@ -10,8 +10,8 @@ participant Noise_reduction
 participant Bounding_box
 participant Coordinates 
 end box
-participant Motor_Correction_Submodule 
-Wifi_submodule -> Load_frame:     Bytestream
+participant Motor_Correction 
+Communication -> Load_frame:     Bytestream
 activate Load_frame
 Load_frame -> HSV
 deactivate Load_frame
@@ -28,7 +28,7 @@ activate Bounding_box
 Bounding_box -> Coordinates
 deactivate Bounding_box
 activate Coordinates
-Coordinates -> Motor_Correction_Submodule: \t\tArray
+Coordinates -> Motor_Correction: \t\tArray
 deactivate Coordinates
 
 @enduml 
