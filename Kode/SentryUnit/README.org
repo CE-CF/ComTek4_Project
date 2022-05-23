@@ -1,0 +1,35 @@
+#+title: Sentry unit src code
+* Toolchain
+Software dependencies:
+ - flex
+ - bison
+ - gperf
+ - python3
+ - python3-pip
+ - python3-setuptools
+ - cmake
+ - ninja-build
+ - ccache
+ - libffi-dev
+ - libssl-dev
+ - dfu-util
+ - libusb-1.0-0
+
+Use your own package manager to install, beware that names might differ a little bit.
+
+IDF toolchain has some steps and you should follow those on this link:
+https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/index.html#step-2-get-esp-idf
+* Flash to device
+With the environment setup, the next step is to build and flash, this is done using this command:
+: $ idf.py build
+
+Then flash to the device using:
+: $ idf.py -p PORT flash
+
+Where port is the device something like ~/dev/ttyACM0~ or ~/dev/ttyUSB0~, if not found do the following:
+: $ ls /dev/tty -l
+Then plug in the ESP32 and repeat the command.
+
+To monitor simply use:
+: $ idf.py -p PORT monitor
+
