@@ -1,6 +1,7 @@
 /* Standard libraries */
 #include <stdio.h>
 
+#include "esp_log.h"
 #include "wifi.h"
 #include "nvs_flash.h"
 #include "cam.h"
@@ -26,6 +27,6 @@ void app_main(void)
 
   connectWifi();
 
-  /* xTaskCreatePinnedToCore(udpClientTask, "UDP Client", 4096,&takePic,5, NULL, 0 ); */
-  xTaskCreatePinnedToCore(tcpServerTask, "TCP Server", 4096,NULL,5, NULL, 0 );
+  xTaskCreatePinnedToCore(udpClientTask, "UDP Client", 4096,&takePic,5, NULL, 0 );
+  xTaskCreatePinnedToCore(tcpServerTask, "TCP Server", 4096,NULL,5, NULL, 1 );
 }

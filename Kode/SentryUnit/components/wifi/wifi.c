@@ -110,6 +110,10 @@ void udpClientTask(void *pvParameters){
   TickType_t lastRun;
   const TickType_t freq = pdMS_TO_TICKS(1000/15);
 
+  TickType_t start;
+  TickType_t end;
+  int count = 0;
+
   ImgPacket *payload;
   ImgData *data;
   data = (ImgData *) malloc(sizeof(ImgData));
@@ -117,7 +121,7 @@ void udpClientTask(void *pvParameters){
   const size_t buflen = sizeof(payload->dat);
   const size_t headerSize = sizeof(ImgPacket) - buflen;
 
-  ESP_LOGI(WIFI_TAG, "LEFTOVER HEAP SPACE: %u", xPortGetFreeHeapSize());
+  start = xTaskGetTickCount();
   while(1){
     struct sockaddr_in dest_addr;
     dest_addr.sin_addr.s_addr = inet_addr(EDGE_IP);
@@ -188,13 +192,20 @@ void udpClientTask(void *pvParameters){
       // Return and free the frame buffer
       returnCam();
 
-      ESP_LOGI(WIFI_TAG, "===========================================");
+      /* ESP_LOGI(WIFI_TAG, "==========================================="); */
       payload->sequence++; // Increment sequence
       /* long end = xTaskGetTickCount() - lastRun; */
       /* vTaskDelay((1000/15 - end) / portTICK_PERIOD_MS); */
+      end = xTaskGetTickCount();
+      count++;
       xTaskDelayUntil(&lastRun, freq);
+      if (count > 4){
+        ESP_LOGW(WIFI_TAG, "[UDP: TIME AFTER 5 PICTURES] %i", end-start);
+        start = xTaskGetTickCount();
+        count = 0;
+      }
     }
-    
+
     
   }
   free(data);
@@ -205,7 +216,11 @@ void handlePacket(const int sock){
   int len;
   char rcvPacket[3];
 
+  TickType_t start;
+  TickType_t end;
+
   do{
+    start = xTaskGetTickCount();
     len = recv(sock, rcvPacket, sizeof(rcvPacket)-1, 0);
     if (len < 0){
       ESP_LOGE(WIFI_TAG, "Error occurred during receiving: errno %d", errno);
@@ -226,6 +241,11 @@ void handlePacket(const int sock){
       /*   } */
       /*   to_write -= written; */
       /* } */
+      end = xTaskGetTickCount();
+      int duration = end-start;
+      
+      /* if (duration != 0) */
+      /*   ESP_LOGW(WIFI_TAG, "[TCP: COMMAND HANDLE TIME]: %i", duration); */
     }
   }while (len > 0);
 }
