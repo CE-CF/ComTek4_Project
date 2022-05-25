@@ -11,8 +11,8 @@ import time
 FORMAT = 'utf-8'
 
 # Setup ip and ports
-Edge_IP = '192.168.1.123'
-Sentry_IP = '192.168.1.238'
+Edge_IP = '172.26.24.28'
+Sentry_IP = '172.26.24.184'
 
 VIDEO_PORT = 2024
 Command_PORT = 2025
@@ -61,7 +61,7 @@ def Receive(BUFFER_SIZE, oldnum): # Receive videofeed udp
                 sequenceNum = 0
                 raise("Received old packets")
             oldSequenceNum == sequenceNum
-            # print("Pakke: ",datid, " Ud af: ", totalpackets)
+            print("Pakke: ",datid+1, " Ud af: ", totalpackets)
             imagearr.append(data[20:])
             if datid >= totalpackets-1:
                 break
@@ -77,7 +77,7 @@ def Receive(BUFFER_SIZE, oldnum): # Receive videofeed udp
 def Send(commands): # UDP communication for commands
     command_udp.sendto(commands, Sentry_ADDR) 
 
-def tcpSend(commands,connect): # TCP communication for commands
+def tcpSend(commands): # TCP communication for commands
     """
     The tcpSend function sends commands to the Sentry unit via TCP.
     It takes a struct object with bytes and send them.
